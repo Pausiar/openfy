@@ -3,6 +3,8 @@ package com.pausiar.openfy.presentation.screens
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -37,6 +39,7 @@ import com.pausiar.openfy.utils.openLabel
 import com.pausiar.openfy.utils.toDurationLabel
 import kotlinx.coroutines.delay
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun PlaylistDetailScreen(
     uiState: PlaylistDetailUiState,
@@ -116,7 +119,10 @@ fun PlaylistDetailScreen(
             )
         }
         item {
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            FlowRow(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
                 ToggleChip(label = "Favoritas", selected = uiState.filter.favoritesOnly, onClick = onToggleFavorites)
                 TrackSort.entries.forEach { sort ->
                     ToggleChip(label = sort.label, selected = uiState.filter.sort == sort, onClick = { onSortChange(sort) })

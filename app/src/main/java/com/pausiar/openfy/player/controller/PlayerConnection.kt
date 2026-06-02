@@ -86,7 +86,13 @@ class PlayerConnection(
         scope.launch {
             _uiState.value = _uiState.value.copy(errorMessage = null)
             val resolvedTracks = withContext(Dispatchers.IO) {
-                candidateTracks.mapNotNull { track ->
+                val startTrack = tracks.getOrNull(startIndex)
+                val prioritized = buildList {
+                    startTrack?.let { add(it) }
+                    candidateTracks.filterNot { track -> track.id == startTrack?.id }.forEach(::add)
+                }
+
+                prioritized.mapNotNull { track ->
                     val resolvedUri = youtubeStreamResolver.resolvePlaybackUri(track) ?: return@mapNotNull null
                     track.copyForPlayback(resolvedUri)
                 }

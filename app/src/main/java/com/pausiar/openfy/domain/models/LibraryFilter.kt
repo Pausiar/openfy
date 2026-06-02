@@ -21,5 +21,5 @@ data class TrackFilter(
 enum class TrackSort(val label: String) {
     POSITION("Orden original"),
     TITLE("Titulo"),
-    DURATION("Duracion")
+    DURATION("Tiempo")
 }

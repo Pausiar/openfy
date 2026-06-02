@@ -312,6 +312,13 @@ fun ToggleChip(
     FilterChip(
         selected = selected,
         onClick = onClick,
-        label = { Text(label) },
+        label = {
+            Text(
+                text = label,
+                maxLines = 1,
+                softWrap = false,
+                overflow = TextOverflow.Ellipsis,
+            )
+        },
     )
 }
