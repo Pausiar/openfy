@@ -24,8 +24,8 @@ android {
         applicationId = "com.pausiar.openfy"
         minSdk = 28
         targetSdk = 35
-        versionCode = 1
-        versionName = "0.1.0"
+        versionCode = 2
+        versionName = "0.1.1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -36,9 +36,21 @@ android {
         buildConfigField("String", "SPOTIFY_METADATA_BASE_URL", "\"${localProperty("OPENFY_SPOTIFY_METADATA_BASE_URL")}\"")
     }
 
+    signingConfigs {
+        create("release") {
+            val keystorePath = localProperty("OPENFY_KEYSTORE_PATH")
+                .ifBlank { "${System.getProperty("user.home")}/.android/debug.keystore" }
+            storeFile = file(keystorePath)
+            storePassword = localProperty("OPENFY_KEYSTORE_PASSWORD").ifBlank { "android" }
+            keyAlias = localProperty("OPENFY_KEY_ALIAS").ifBlank { "AndroidDebugKey" }
+            keyPassword = localProperty("OPENFY_KEY_PASSWORD").ifBlank { "android" }
+        }
+    }
+
     buildTypes {
         release {
             isMinifyEnabled = false
+            signingConfig = signingConfigs.getByName("release")
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"

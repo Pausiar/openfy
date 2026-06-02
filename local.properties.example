@@ -6,3 +6,9 @@ OPENFY_YOUTUBE_API_KEY=
 
 # Optional: backend/proxy base URL for Spotify metadata and previews
 OPENFY_SPOTIFY_METADATA_BASE_URL=https://your-secure-metadata-backend.example/
+
+# Optional: release signing (defaults to Android debug keystore for local builds)
+OPENFY_KEYSTORE_PATH=
+OPENFY_KEYSTORE_PASSWORD=
+OPENFY_KEY_ALIAS=
+OPENFY_KEY_PASSWORD=
