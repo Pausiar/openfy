@@ -1,0 +1,8 @@
+# Android SDK path is local to each machine
+sdk.dir=C\\:\\Android\\Sdk
+
+# Optional: official YouTube Data API key for richer YouTube imports
+OPENFY_YOUTUBE_API_KEY=
+
+# Optional: backend/proxy base URL for Spotify metadata and previews
+OPENFY_SPOTIFY_METADATA_BASE_URL=https://your-secure-metadata-backend.example/
