@@ -68,7 +68,14 @@ fun PlayerScreen(
             item { InfoBanner(message = message) }
         }
 
-        if (currentTrack == null) {
+        if (uiState.player.isPreparing) {
+            item {
+                EmptyStateCard(
+                    title = "Preparando reproduccion",
+                    subtitle = "Openfy esta resolviendo el audio de YouTube. Esto puede tardar unos segundos.",
+                )
+            }
+        } else if (currentTrack == null) {
             item {
                 EmptyStateCard(
                     title = "Nada sonando ahora",

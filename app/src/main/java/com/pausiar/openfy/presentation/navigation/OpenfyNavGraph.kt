@@ -230,10 +230,14 @@ fun OpenfyNavGraph(playerViewModel: PlayerViewModel) {
                         onQueryChange = viewModel::updateQuery,
                         onToggleFavorites = viewModel::toggleFavoritesOnly,
                         onSortChange = viewModel::updateSort,
-                        onPlay = { shuffle -> viewModel.playAll(shuffle) },
+                        onPlay = { shuffle ->
+                            viewModel.playAll(shuffle)
+                            navController.navigate(OpenfyDestination.Player.route)
+                        },
                         onTrackClick = { track ->
                             if (track.isPlayableInApp) {
                                 viewModel.playTrack(track)
+                                navController.navigate(OpenfyDestination.Player.route)
                             } else {
                                 track.originalUrl?.let { url -> context.openInPreferredApp(url, track.platform) }
                             }

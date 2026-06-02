@@ -21,6 +21,7 @@ import com.pausiar.openfy.domain.usecases.ImportPlaylistUseCase
 import com.pausiar.openfy.domain.usecases.ObservePlaylistDetailUseCase
 import com.pausiar.openfy.domain.usecases.ObservePlaylistsUseCase
 import com.pausiar.openfy.playback.NewPipeDownloader
+import com.pausiar.openfy.playback.PipedStreamDataSource
 import com.pausiar.openfy.playback.YouTubeStreamResolver
 import com.pausiar.openfy.player.controller.PlayerConnection
 import org.schabi.newpipe.extractor.NewPipe
@@ -87,7 +88,12 @@ class AppContainer(
         service = spotifyProxyService,
     )
 
-    private val youtubeStreamResolver = YouTubeStreamResolver()
+    private val pipedStreamDataSource = PipedStreamDataSource(httpClient = okHttpClient)
+
+    private val youtubeStreamResolver = YouTubeStreamResolver(
+        httpClient = okHttpClient,
+        pipedStreamDataSource = pipedStreamDataSource,
+    )
 
     val musicRepository: MusicRepository = MusicRepositoryImpl(
         appContext = application,

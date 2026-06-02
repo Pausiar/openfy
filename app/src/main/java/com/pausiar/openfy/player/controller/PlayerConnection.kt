@@ -74,9 +74,11 @@ class PlayerConnection(
 
     fun playTracks(tracks: List<Track>, startIndex: Int = 0, shuffled: Boolean = false) {
         val candidateTracks = tracks.filter { it.isPlayableInApp && !it.playbackUri.isNullOrBlank() }
-        val startTrack = tracks.getOrNull(startIndex)
+        val startTrack = tracks.getOrNull(startIndex)?.takeIf { track ->
+            candidateTracks.any { it.id == track.id }
+        } ?: candidateTracks.firstOrNull()
 
-        if (candidateTracks.isEmpty()) {
+        if (startTrack == null || candidateTracks.isEmpty()) {
             _uiState.value = _uiState.value.copy(
                 errorMessage = "Esta playlist no tiene contenido reproducible dentro de Openfy.",
             )
@@ -84,48 +86,89 @@ class PlayerConnection(
         }
 
         scope.launch {
-            _uiState.value = _uiState.value.copy(errorMessage = null)
-            val resolvedTracks = withContext(Dispatchers.IO) {
-                val startTrack = tracks.getOrNull(startIndex)
-                val prioritized = buildList {
-                    startTrack?.let { add(it) }
-                    candidateTracks.filterNot { track -> track.id == startTrack?.id }.forEach(::add)
-                }
+            _uiState.value = _uiState.value.copy(errorMessage = null, isPreparing = true)
 
-                prioritized.mapNotNull { track ->
-                    val resolvedUri = youtubeStreamResolver.resolvePlaybackUri(track) ?: return@mapNotNull null
-                    track.copyForPlayback(resolvedUri)
-                }
-            }
-
-            if (resolvedTracks.isEmpty()) {
-                _uiState.value = _uiState.value.copy(
-                    errorMessage = "No se ha podido preparar la reproduccion. Comprueba tu conexion e intentalo otra vez.",
-                )
-                return@launch
-            }
-
-            val controller = _controller.value
+            val controller = awaitController()
             if (controller == null) {
                 _uiState.value = _uiState.value.copy(
+                    isPreparing = false,
                     errorMessage = "El reproductor aun no esta listo. Intentalo de nuevo en unos segundos.",
                 )
                 return@launch
             }
 
-            val resolvedStartIndex = resolvedTracks.indexOfFirst { it.track.id == startTrack?.id }.coerceAtLeast(0)
-            _queue.value = resolvedTracks.map { it.track }
-            controller.setMediaItems(
-                resolvedTracks.map { it.toMediaItem() },
-                resolvedStartIndex,
-                C.TIME_UNSET,
-            )
-            controller.shuffleModeEnabled = shuffled
-            controller.prepare()
-            controller.playWhenReady = true
-            controller.play()
+            val orderedTracks = buildList {
+                add(startTrack)
+                if (shuffled) {
+                    addAll(candidateTracks.filter { it.id != startTrack.id }.shuffled())
+                } else {
+                    addAll(candidateTracks.filter { it.id != startTrack.id })
+                }
+            }
+
+            val resolvedTracks = mutableListOf<ResolvedTrack>()
+            for (track in orderedTracks) {
+                val resolvedUri = withContext(Dispatchers.IO) {
+                    youtubeStreamResolver.resolvePlaybackUri(track)
+                } ?: continue
+                resolvedTracks += track.copyForPlayback(resolvedUri)
+                if (resolvedTracks.size == 1) {
+                    startPlayback(controller, resolvedTracks, shuffled)
+                }
+            }
+
+            if (resolvedTracks.isEmpty()) {
+                _uiState.value = _uiState.value.copy(
+                    isPreparing = false,
+                    errorMessage = "No se ha podido preparar la reproduccion. Comprueba tu conexion e intentalo otra vez.",
+                )
+                return@launch
+            }
+
+            if (resolvedTracks.size > 1) {
+                _queue.value = resolvedTracks.map { it.track }
+                controller.setMediaItems(
+                    resolvedTracks.map { it.toMediaItem() },
+                    0,
+                    C.TIME_UNSET,
+                )
+                controller.shuffleModeEnabled = shuffled
+                controller.prepare()
+                if (!controller.isPlaying) {
+                    controller.playWhenReady = true
+                    controller.play()
+                }
+            }
+
             refreshState(controller)
+            _uiState.value = _uiState.value.copy(isPreparing = false)
         }
+    }
+
+    private fun startPlayback(
+        controller: MediaController,
+        resolvedTracks: List<ResolvedTrack>,
+        shuffled: Boolean,
+    ) {
+        _queue.value = resolvedTracks.map { it.track }
+        controller.setMediaItems(
+            resolvedTracks.map { it.toMediaItem() },
+            0,
+            C.TIME_UNSET,
+        )
+        controller.shuffleModeEnabled = shuffled
+        controller.prepare()
+        controller.playWhenReady = true
+        controller.play()
+        refreshState(controller)
+    }
+
+    private suspend fun awaitController(maxAttempts: Int = 20): MediaController? {
+        repeat(maxAttempts) {
+            _controller.value?.let { return it }
+            delay(250)
+        }
+        return _controller.value
     }
 
     fun togglePlayPause() {
