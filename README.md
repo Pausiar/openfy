@@ -4,6 +4,21 @@ Openfy es una aplicacion Android moderna para importar playlists por enlace, org
 
 La app reconoce enlaces de Spotify y YouTube, guarda metadatos localmente con Room, permite anadir archivos de audio del dispositivo, mantiene reproduccion en segundo plano con Media3 y ofrece apertura oficial en Spotify o YouTube cuando el contenido no puede reproducirse legalmente dentro de Openfy.
 
+## Web y GitHub Pages
+
+La web de Openfy está en la carpeta `web/`. Se despliega automáticamente con GitHub Actions.
+
+**Configuración necesaria una sola vez:**
+1. Ve a **Settings → Pages** en el repositorio.
+2. En **Source**, selecciona **GitHub Actions** (no "Deploy from a branch").
+3. El workflow `.github/workflows/pages.yml` se encargará del resto en cada push a `main`.
+
+URL esperada: `https://pausiar.github.io/openfy/`
+
+> ⚠️ Si Pages está configurado en "Deploy from a branch → main / (root)", se mostrará el README
+> en vez de la landing. El source correcto es **GitHub Actions**.
+
+
 ## Funciones principales
 
 - Pegado de enlaces de Spotify o YouTube desde la pantalla inicial.

@@ -3,65 +3,296 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Openfy importa playlists de YouTube y Spotify, organiza tu biblioteca y reproduce musica en Android.">
+  <meta name="description" content="Openfy — App Android open source para importar playlists de YouTube y Spotify, organizar tu biblioteca y reproducir música.">
+  <meta property="og:title" content="Openfy — Reproductor de playlists open source">
+  <meta property="og:description" content="Importa playlists de YouTube y Spotify, organiza tu biblioteca local y reproduce música en Android.">
+  <meta property="og:image" content="assets/logo.png">
   <title>Openfy — Reproductor de playlists</title>
   <link rel="icon" type="image/png" href="assets/logo.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,300;12..96,400;12..96,600;12..96,700;12..96,800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <div class="bg"></div>
-  <header class="hero">
-    <img src="assets/logo.png" alt="Openfy" class="logo">
-    <p class="badge">Android · Gratis · Open source</p>
-    <h1>Openfy</h1>
-    <p class="lead">
-      Pega un enlace de YouTube o Spotify, importa la playlist y escuchala en tu movil con una interfaz moderna.
-    </p>
-    <div class="actions">
-      <a class="btn btn-primary" href="https://github.com/Pausiar/openfy/releases/latest/download/openfy-v0.1.3.apk">
-        Descargar APK
-      </a>
-      <a class="btn btn-secondary" href="https://github.com/Pausiar/openfy" target="_blank" rel="noopener noreferrer">
-        Ver en GitHub
-      </a>
+
+  <!-- Background -->
+  <div class="bg-grid"></div>
+  <div class="bg-glow bg-glow-1"></div>
+  <div class="bg-glow bg-glow-2"></div>
+
+  <!-- Nav -->
+  <nav class="nav">
+    <div class="nav-inner">
+      <div class="nav-logo">
+        <img src="assets/logo.png" alt="Openfy" class="nav-icon">
+        <span class="nav-name">Openfy</span>
+      </div>
+      <div class="nav-links">
+        <a href="#features">Funciones</a>
+        <a href="#install">Instalar</a>
+        <a href="#tech">Stack</a>
+        <a href="https://github.com/Pausiar/openfy" target="_blank" rel="noopener" class="nav-gh">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
+          GitHub
+        </a>
+      </div>
     </div>
-    <p class="hint">Version 0.1.3 · Android 9+ · Permite instalar apps de origenes desconocidos</p>
+  </nav>
+
+  <!-- Hero -->
+  <header class="hero">
+    <div class="hero-inner">
+      <div class="hero-badge">
+        <span class="dot"></span>
+        Android · Gratis · Open Source
+      </div>
+      <div class="hero-logo-wrap">
+        <img src="assets/logo.png" alt="Openfy" class="hero-logo">
+      </div>
+      <h1 class="hero-title">Tu música.<br><span class="accent">Sin barreras.</span></h1>
+      <p class="hero-lead">
+        Importa playlists de YouTube o Spotify pegando un enlace, organiza tu biblioteca local y escucha con reproducción en segundo plano. <strong>100% open source. Sin cuentas. Sin rastreo.</strong>
+      </p>
+      <div class="hero-actions">
+        <a class="btn btn-primary" href="https://github.com/Pausiar/openfy/releases/latest/download/openfy-v0.1.3.apk">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Descargar APK
+        </a>
+        <a class="btn btn-secondary" href="https://github.com/Pausiar/openfy" target="_blank" rel="noopener noreferrer">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
+          Ver código
+        </a>
+      </div>
+      <p class="hero-hint">v0.1.3 · Requiere Android 9+ · APK firmado con debug keystore</p>
+    </div>
+    <div class="hero-visual">
+      <div class="player-mockup">
+        <div class="player-bar">
+          <div class="player-dot red"></div><div class="player-dot yellow"></div><div class="player-dot green"></div>
+        </div>
+        <div class="player-screen">
+          <div class="track-art"></div>
+          <div class="track-info">
+            <div class="track-title skeleton"></div>
+            <div class="track-artist skeleton short"></div>
+          </div>
+          <div class="controls">
+            <div class="ctrl-btn">⏮</div>
+            <div class="ctrl-btn play">▶</div>
+            <div class="ctrl-btn">⏭</div>
+          </div>
+          <div class="progress-bar"><div class="progress-fill"></div></div>
+          <div class="waveform">
+            <span></span><span></span><span></span><span></span><span></span>
+            <span></span><span></span><span></span><span></span><span></span>
+            <span></span><span></span><span></span><span></span><span></span>
+          </div>
+        </div>
+      </div>
+    </div>
   </header>
 
   <main>
-    <section class="features">
-      <article class="card">
-        <h2>Importar por enlace</h2>
-        <p>Playlists de YouTube y referencias de Spotify desde la pantalla de inicio.</p>
-      </article>
-      <article class="card">
-        <h2>Biblioteca local</h2>
-        <p>Busca, filtra, renombra y organiza tus playlists importadas.</p>
-      </article>
-      <article class="card">
-        <h2>Reproductor integrado</h2>
-        <p>Cola, shuffle, repeat, mini-player y reproduccion en segundo plano.</p>
-      </article>
-      <article class="card">
-        <h2>Audio local</h2>
-        <p>Importa archivos del dispositivo y mezclalos con tus playlists.</p>
-      </article>
+
+    <!-- Stats strip -->
+    <section class="stats">
+      <div class="stats-inner">
+        <div class="stat">
+          <span class="stat-num">0</span>
+          <span class="stat-label">datos recogidos</span>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat">
+          <span class="stat-num">100%</span>
+          <span class="stat-label">almacenamiento local</span>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat">
+          <span class="stat-num">MIT</span>
+          <span class="stat-label">licencia open source</span>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat">
+          <span class="stat-num">Android 9+</span>
+          <span class="stat-label">compatible</span>
+        </div>
+      </div>
     </section>
 
-    <section class="steps">
-      <h2>Como instalar</h2>
-      <ol>
-        <li>Descarga el APK con el boton de arriba.</li>
-        <li>Abre el archivo y permite instalar desde fuentes desconocidas si Android lo pide.</li>
-        <li>Abre Openfy, pega tu enlace y pulsa <strong>Importar playlist</strong>.</li>
-        <li>Entra en la playlist y pulsa <strong>Reproducir</strong>.</li>
-      </ol>
+    <!-- Features -->
+    <section class="features" id="features">
+      <div class="section-header">
+        <div class="section-tag">Funciones</div>
+        <h2 class="section-title">Todo lo que necesitas.<br>Nada más.</h2>
+      </div>
+      <div class="features-grid">
+        <article class="card card-highlight">
+          <div class="card-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+          </div>
+          <h3>Importar por enlace</h3>
+          <p>Pega una URL de YouTube o Spotify y Openfy detecta el tipo automáticamente: playlist, vídeo, álbum o canción. Sin cuentas, sin OAuth.</p>
+          <div class="card-code">
+            <span class="mono muted">↳</span>
+            <span class="mono">youtube.com/playlist?list=…</span>
+          </div>
+        </article>
+
+        <article class="card">
+          <div class="card-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+          </div>
+          <h3>Biblioteca local</h3>
+          <p>Busca, filtra por plataforma, ordena, renombra y elimina playlists. Todo guardado con Room en tu dispositivo.</p>
+        </article>
+
+        <article class="card">
+          <div class="card-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg>
+          </div>
+          <h3>Reproductor integrado</h3>
+          <p>Cola, shuffle, repeat, mini-player y reproducción en segundo plano con notificación multimedia. Servicio Media3/ExoPlayer.</p>
+        </article>
+
+        <article class="card">
+          <div class="card-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+          </div>
+          <h3>Audio local</h3>
+          <p>Importa archivos del dispositivo con el selector del sistema y mézclalos en playlists junto a tus referencias importadas.</p>
+        </article>
+
+        <article class="card">
+          <div class="card-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
+          </div>
+          <h3>Export / Import JSON</h3>
+          <p>Exporta toda tu biblioteca — playlists, favoritos, historial y preferencias — a un JSON. Importa en cualquier momento para restaurar.</p>
+        </article>
+
+        <article class="card">
+          <div class="card-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          </div>
+          <h3>Sin claves en cliente</h3>
+          <p>La YouTube API key es opcional y nunca se embebe en la APK pública. El proxy de Spotify tampoco expone credenciales en el frontend.</p>
+        </article>
+      </div>
     </section>
+
+    <!-- How it works -->
+    <section class="install" id="install">
+      <div class="section-header">
+        <div class="section-tag">Instalación</div>
+        <h2 class="section-title">En marcha en 60 segundos</h2>
+      </div>
+      <div class="steps-grid">
+        <div class="step">
+          <div class="step-num">01</div>
+          <div class="step-content">
+            <h3>Descarga el APK</h3>
+            <p>Pulsa el botón de descarga. El archivo <span class="mono">openfy-v0.1.3.apk</span> se descargará desde GitHub Releases.</p>
+          </div>
+        </div>
+        <div class="step-arrow">→</div>
+        <div class="step">
+          <div class="step-num">02</div>
+          <div class="step-content">
+            <h3>Permite fuentes desconocidas</h3>
+            <p>Android pedirá permiso para instalar apps de origen externo. Actívalo solo para esta descarga desde Ajustes.</p>
+          </div>
+        </div>
+        <div class="step-arrow">→</div>
+        <div class="step">
+          <div class="step-num">03</div>
+          <div class="step-content">
+            <h3>Importa tu primera playlist</h3>
+            <p>Copia una URL de YouTube o Spotify, pégala en Openfy y pulsa <strong>Importar</strong>. Listo.</p>
+          </div>
+        </div>
+      </div>
+      <div class="install-cta">
+        <a class="btn btn-primary btn-large" href="https://github.com/Pausiar/openfy/releases/latest/download/openfy-v0.1.3.apk">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Descargar Openfy v0.1.3
+        </a>
+        <a class="btn btn-ghost" href="https://github.com/Pausiar/openfy/releases" target="_blank" rel="noopener">
+          Historial de versiones →
+        </a>
+      </div>
+    </section>
+
+    <!-- Tech stack -->
+    <section class="tech" id="tech">
+      <div class="section-header">
+        <div class="section-tag">Stack técnico</div>
+        <h2 class="section-title">Construido con<br>lo mejor de Android</h2>
+      </div>
+      <div class="tech-grid">
+        <div class="tech-card">
+          <span class="tech-label">Lenguaje</span>
+          <span class="tech-value mono">Kotlin</span>
+        </div>
+        <div class="tech-card">
+          <span class="tech-label">UI</span>
+          <span class="tech-value mono">Jetpack Compose + Material 3</span>
+        </div>
+        <div class="tech-card">
+          <span class="tech-label">Arquitectura</span>
+          <span class="tech-value mono">MVVM + Repository Pattern</span>
+        </div>
+        <div class="tech-card">
+          <span class="tech-label">Base de datos</span>
+          <span class="tech-value mono">Room Database</span>
+        </div>
+        <div class="tech-card">
+          <span class="tech-label">Preferencias</span>
+          <span class="tech-value mono">DataStore</span>
+        </div>
+        <div class="tech-card">
+          <span class="tech-label">Reproducción</span>
+          <span class="tech-value mono">Media3 / ExoPlayer</span>
+        </div>
+        <div class="tech-card">
+          <span class="tech-label">Red</span>
+          <span class="tech-value mono">Retrofit + KotlinX Serialization</span>
+        </div>
+        <div class="tech-card">
+          <span class="tech-label">Imágenes</span>
+          <span class="tech-value mono">Coil</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Legal -->
+    <section class="legal">
+      <div class="legal-inner">
+        <div class="legal-icon">⚖️</div>
+        <h2>Transparencia legal</h2>
+        <p>Openfy <strong>no descarga audio protegido</strong>, no evita DRM, no bloquea anuncios de terceros y no reproduce contenido completo de Spotify o YouTube sin permisos válidos.</p>
+        <p>La app reproduce exclusivamente: archivos locales del usuario, la demo incluida, previews oficiales si un backend seguro las suministra, y streams autorizados. Para el resto, abre la app oficial o el navegador.</p>
+        <p>La YouTube API key es opcional y se configura en <span class="mono">local.properties</span> (fuera del repositorio público). No se distribuye ningún secreto en la APK pública.</p>
+      </div>
+    </section>
+
   </main>
 
-  <footer>
-    <p>Hecho por <a href="https://github.com/Pausiar" target="_blank" rel="noopener noreferrer">Pausiar</a></p>
-    <p><a href="https://github.com/Pausiar/openfy/releases">Historial de versiones</a></p>
+  <footer class="footer">
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <img src="assets/logo.png" alt="Openfy" class="footer-logo">
+        <span>Openfy</span>
+      </div>
+      <div class="footer-links">
+        <a href="https://github.com/Pausiar/openfy" target="_blank" rel="noopener">GitHub</a>
+        <a href="https://github.com/Pausiar/openfy/releases" target="_blank" rel="noopener">Releases</a>
+        <a href="https://github.com/Pausiar/openfy/issues" target="_blank" rel="noopener">Issues</a>
+        <a href="https://github.com/Pausiar" target="_blank" rel="noopener">@Pausiar</a>
+      </div>
+      <p class="footer-copy">Hecho con 🎵 por <a href="https://github.com/Pausiar" target="_blank" rel="noopener">Pausiar</a> · MIT License</p>
+    </div>
   </footer>
+
 </body>
 </html>
