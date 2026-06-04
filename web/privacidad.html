@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Política de Privacidad — Openfy">
+  <title>Política de Privacidad — Openfy</title>
+  <link rel="icon" type="image/png" href="assets/logo.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,300;12..96,400;12..96,600;12..96,700;12..96,800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    .legal-container {
+      max-width: 800px;
+      margin: 80px auto;
+      padding: 40px 24px;
+      background: var(--bg-2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+    }
+    .legal-container h1 {
+      font-size: 2.5rem;
+      margin-bottom: 24px;
+      letter-spacing: -0.03em;
+    }
+    .legal-container h2 {
+      font-size: 1.5rem;
+      margin-top: 32px;
+      margin-bottom: 16px;
+      letter-spacing: -0.02em;
+    }
+    .legal-container p {
+      color: var(--muted);
+      margin-bottom: 16px;
+      line-height: 1.7;
+    }
+    .legal-container ul {
+      margin-left: 20px;
+      margin-bottom: 16px;
+      color: var(--muted);
+    }
+    .legal-container li {
+      margin-bottom: 8px;
+    }
+    .back-home {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--accent);
+      text-decoration: none;
+      font-weight: 600;
+      margin-bottom: 32px;
+      transition: opacity 0.2s;
+    }
+    .back-home:hover {
+      opacity: 0.8;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="bg-grid"></div>
+  <div class="bg-glow bg-glow-1"></div>
+  <div class="bg-glow bg-glow-2"></div>
+
+  <main class="legal-container">
+    <a href="index.html" class="back-home">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+      Volver al inicio
+    </a>
+
+    <h1>Política de Privacidad</h1>
+    <p>La privacidad de los usuarios es una prioridad absoluta para Openfy. Esta política de privacidad describe cómo se gestionan los datos tanto en este sitio web como en la aplicación móvil de Openfy, cumpliendo estrictamente con el Reglamento General de Protección de Datos (RGPD) de la Unión Europea y la Ley Orgánica de Protección de Datos y Garantía de los Derechos Digitales (LOPDGDD) de España.</p>
+
+    <h2>1. Recopilación de Datos Personales</h2>
+    <p><strong>En el sitio web:</strong> Este sitio web es una página estática alojada en GitHub Pages. No recopilamos, almacenamos ni procesamos ningún dato personal de los visitantes. No hay formularios de registro, boletines informativos ni herramientas de análisis de terceros que rastreen su comportamiento.</p>
+    <p><strong>En la aplicación móvil Openfy:</strong> La aplicación Openfy recopila <strong>cero datos personales</strong>. No requiere registro de usuario, no utiliza cuentas de inicio de sesión y no transmite ningún tipo de información de uso, telemetría o estadísticas a servidores externos.</p>
+
+    <h2>2. Almacenamiento de la Información</h2>
+    <p>Toda la información que usted gestiona dentro de la aplicación móvil Openfy (playlists importadas, canciones favoritas, historial de reproducción local y configuración de la app) se almacena de forma <strong>estrictamente local</strong> en su propio dispositivo utilizando bases de datos seguras (Room) y preferencias cifradas (DataStore).</p>
+    <p>Esta información nunca sale de su dispositivo, a menos que usted decida exportar manualmente su biblioteca en formato JSON para transferirla o guardarla como copia de seguridad.</p>
+
+    <h2>3. Servicios de Terceros</h2>
+    <p>Para ofrecer sus funciones de reproducción, la aplicación realiza conexiones directas a APIs públicas o extractores de contenido (como YouTube o Piped) únicamente para obtener las direcciones de transmisión de audio. Estas conexiones se realizan directamente desde su dispositivo a los servidores del servicio correspondiente, sin intermediarios.</p>
+    <p>Al interactuar con estos servicios externos, se aplican las políticas de privacidad de los respectivos proveedores (por ejemplo, la Política de Privacidad de Google/YouTube).</p>
+
+    <h2>4. Derechos del Usuario (Derechos ARCO-POL)</h2>
+    <p>Dado que no recopilamos ni almacenamos ningún dato personal suyo, no disponemos de ninguna información que usted pueda rectificar, suprimir o consultar. No obstante, el Reglamento General de Protección de Datos le otorga los siguientes derechos:</p>
+    <ul>
+      <li>Derecho de acceso, rectificación y supresión de sus datos.</li>
+      <li>Derecho a la limitación del tratamiento y a la portabilidad de sus datos.</li>
+      <li>Derecho de oposición a que se traten sus datos.</li>
+    </ul>
+    <p>Usted tiene el control total de sus datos dentro de la aplicación Openfy y puede eliminarlos por completo en cualquier momento borrando los datos de la aplicación desde los ajustes de su dispositivo Android o eliminando las playlists de forma manual dentro de la app.</p>
+
+    <h2>5. Cambios en esta Política</h2>
+    <p>Esta Política de Privacidad puede ser actualizada en el futuro para reflejar cambios en la aplicación o adaptaciones legales. Cualquier modificación será publicada en esta misma página con su correspondiente fecha de actualización.</p>
+  </main>
+
+</body>
+</html>
