@@ -13,8 +13,15 @@ fun localProperty(name: String): String {
     if (localPropertiesFile.exists()) {
         localPropertiesFile.inputStream().use(properties::load)
     }
-    return properties.getProperty(name) ?: ""
+    return properties.getProperty(name) ?: System.getenv(name) ?: ""
 }
+
+fun hasReleaseSigning(): Boolean = listOf(
+    "OPENFY_KEYSTORE_PATH",
+    "OPENFY_KEYSTORE_PASSWORD",
+    "OPENFY_KEY_ALIAS",
+    "OPENFY_KEY_PASSWORD"
+).all { localProperty(it).isNotBlank() }
 
 android {
     namespace = "com.pausiar.openfy"
@@ -24,8 +31,8 @@ android {
         applicationId = "com.pausiar.openfy"
         minSdk = 28
         targetSdk = 35
-        versionCode = 5
-        versionName = "0.1.4"
+        versionCode = 6
+        versionName = "0.1.5"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -38,19 +45,21 @@ android {
 
     signingConfigs {
         create("release") {
-            val keystorePath = localProperty("OPENFY_KEYSTORE_PATH")
-                .ifBlank { "${System.getProperty("user.home")}/.android/debug.keystore" }
-            storeFile = file(keystorePath)
-            storePassword = localProperty("OPENFY_KEYSTORE_PASSWORD").ifBlank { "android" }
-            keyAlias = localProperty("OPENFY_KEY_ALIAS").ifBlank { "AndroidDebugKey" }
-            keyPassword = localProperty("OPENFY_KEY_PASSWORD").ifBlank { "android" }
+            if (hasReleaseSigning()) {
+                storeFile = file(localProperty("OPENFY_KEYSTORE_PATH"))
+                storePassword = localProperty("OPENFY_KEYSTORE_PASSWORD")
+                keyAlias = localProperty("OPENFY_KEY_ALIAS")
+                keyPassword = localProperty("OPENFY_KEY_PASSWORD")
+            }
         }
     }
 
     buildTypes {
         release {
             isMinifyEnabled = false
-            signingConfig = signingConfigs.getByName("release")
+            if (hasReleaseSigning()) {
+                signingConfig = signingConfigs.getByName("release")
+            }
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"

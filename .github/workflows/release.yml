@@ -1,0 +1,81 @@
+name: Android Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Release tag to publish, e.g. v0.1.5'
+        required: true
+        default: 'v0.1.5'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: gradle
+
+      - name: Validate release signing secrets
+        env:
+          OPENFY_KEYSTORE_BASE64: ${{ secrets.OPENFY_KEYSTORE_BASE64 }}
+          OPENFY_KEYSTORE_PASSWORD: ${{ secrets.OPENFY_KEYSTORE_PASSWORD }}
+          OPENFY_KEY_ALIAS: ${{ secrets.OPENFY_KEY_ALIAS }}
+          OPENFY_KEY_PASSWORD: ${{ secrets.OPENFY_KEY_PASSWORD }}
+        run: |
+          test -n "$OPENFY_KEYSTORE_BASE64"
+          test -n "$OPENFY_KEYSTORE_PASSWORD"
+          test -n "$OPENFY_KEY_ALIAS"
+          test -n "$OPENFY_KEY_PASSWORD"
+
+      - name: Decode release keystore
+        env:
+          OPENFY_KEYSTORE_BASE64: ${{ secrets.OPENFY_KEYSTORE_BASE64 }}
+        run: |
+          mkdir -p "$RUNNER_TEMP/openfy-signing"
+          echo "$OPENFY_KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/openfy-signing/openfy-release.jks"
+
+      - name: Build signed release APK
+        env:
+          OPENFY_KEYSTORE_PATH: ${{ runner.temp }}/openfy-signing/openfy-release.jks
+          OPENFY_KEYSTORE_PASSWORD: ${{ secrets.OPENFY_KEYSTORE_PASSWORD }}
+          OPENFY_KEY_ALIAS: ${{ secrets.OPENFY_KEY_ALIAS }}
+          OPENFY_KEY_PASSWORD: ${{ secrets.OPENFY_KEY_PASSWORD }}
+        run: ./gradlew clean :app:assembleRelease
+
+      - name: Verify APK signature
+        run: $(ls -d $ANDROID_HOME/build-tools/* | sort -V | tail -n 1)/apksigner verify --verbose app/build/outputs/apk/release/app-release.apk
+
+      - name: Prepare release assets
+        run: |
+          VERSION_NAME=$(sed -n 's/.*versionName = "\([^"]*\)".*/\1/p' app/build.gradle.kts | head -n 1)
+          if [ -z "$VERSION_NAME" ]; then VERSION_NAME="${GITHUB_REF_NAME#v}"; fi
+          cp app/build/outputs/apk/release/app-release.apk "openfy-v${VERSION_NAME}.apk"
+          cp app/build/outputs/apk/release/app-release.apk openfy-latest.apk
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.event.inputs.tag || github.ref_name }}
+          name: Openfy ${{ github.event.inputs.tag || github.ref_name }}
+          body: |
+            Fix de colores en estilos y nueva APK instalable firmada.
+
+            - Paleta visual consistente para app Android y web.
+            - Botón de descarga actualizado al asset latest estable.
+            - APK release firmada y verificada con apksigner en CI.
+          files: |
+            openfy-v*.apk
+            openfy-latest.apk
