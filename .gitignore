@@ -5,3 +5,8 @@ build/
 captures/
 *.iml
 **/build/
+# Signing and local secrets
+*.jks
+*.keystore
+keystore.properties
+.env

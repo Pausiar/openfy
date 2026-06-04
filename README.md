@@ -19,6 +19,50 @@ URL esperada: `https://pausiar.github.io/openfy/`
 > en vez de la landing. El source correcto es **GitHub Actions**.
 
 
+
+## Version actual
+
+- Android: `0.1.5` (`versionCode` 6).
+- Descarga web: `https://github.com/Pausiar/openfy/releases/latest/download/openfy-latest.apk`.
+
+## Firma release y APK
+
+Openfy no guarda keystores ni secretos en el repositorio. Para una APK release final, define estas claves en `local.properties` o como variables de entorno:
+
+```properties
+OPENFY_KEYSTORE_PATH=path/to/openfy-release.jks
+OPENFY_KEYSTORE_PASSWORD=your_store_password
+OPENFY_KEY_ALIAS=your_key_alias
+OPENFY_KEY_PASSWORD=your_key_password
+```
+
+Luego ejecuta:
+
+```bash
+./gradlew clean :app:assembleRelease
+apksigner verify --verbose app/build/outputs/apk/release/app-release.apk
+```
+
+Si no existen credenciales de firma release, `assembleRelease` genera un APK release no firmado; usa `:app:assembleDebug` solo para pruebas locales, no para publicar una release final.
+
+## GitHub Releases
+
+El workflow `.github/workflows/release.yml` crea releases al publicar tags `v*.*.*`. Requiere estos secrets:
+
+- `OPENFY_KEYSTORE_BASE64`: keystore release codificado con `base64 -w 0 path/to/openfy-release.jks`.
+- `OPENFY_KEYSTORE_PASSWORD`
+- `OPENFY_KEY_ALIAS`
+- `OPENFY_KEY_PASSWORD`
+
+Para publicar la versión actual:
+
+```bash
+git tag v0.1.5
+git push origin v0.1.5
+```
+
+La release adjunta dos assets: `openfy-v0.1.5.apk` y `openfy-latest.apk`. La landing de GitHub Pages apunta siempre a `openfy-latest.apk`, por lo que futuras releases solo deben volver a subir ese asset.
+
 ## Funciones principales
 
 - Pegado de enlaces de Spotify o YouTube desde la pantalla inicial.
