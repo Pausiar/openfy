@@ -9,14 +9,15 @@ import com.pausiar.openfy.domain.models.PlaylistSummary
 import com.pausiar.openfy.domain.usecases.DetectLinkUseCase
 import com.pausiar.openfy.domain.usecases.ImportPlaylistUseCase
 import com.pausiar.openfy.domain.usecases.ObservePlaylistsUseCase
-import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 data class HomeUiState(
@@ -36,7 +37,9 @@ class HomeViewModel(
     private val inputUrl = MutableStateFlow("")
     private val isImporting = MutableStateFlow(false)
     private val message = MutableStateFlow<String?>(null)
-    private val openPlaylistEvents = MutableSharedFlow<Long>()
+
+    // Canal en vez de SharedFlow: si la pantalla no esta suscrita en ese instante el evento no se pierde.
+    private val openPlaylistEvents = Channel<Long>(Channel.BUFFERED)
 
     val uiState: StateFlow<HomeUiState> = combine(
         observePlaylistsUseCase(),
@@ -53,10 +56,18 @@ class HomeViewModel(
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), HomeUiState())
 
-    val openPlaylist = openPlaylistEvents.asSharedFlow()
+    val openPlaylist: Flow<Long> = openPlaylistEvents.receiveAsFlow()
 
     init {
-        viewModelScope.launch { musicRepository.seedDemoPlaylistIfNeeded() }
+        viewModelScope.launch {
+            try {
+                musicRepository.seedDemoPlaylistIfNeeded()
+            } catch (cancelled: CancellationException) {
+                throw cancelled
+            } catch (ignored: Exception) {
+                // La playlist demo es opcional: un fallo aqui no debe tumbar la pantalla de inicio.
+            }
+        }
     }
 
     fun updateInput(value: String) {
@@ -64,23 +75,32 @@ class HomeViewModel(
     }
 
     fun importUrl() {
+        if (isImporting.value) return // evita imports duplicados por doble toque
+
         val url = inputUrl.value.trim()
         if (url.isBlank()) {
             message.value = "Pega primero un enlace de Spotify o YouTube."
             return
         }
 
+        isImporting.value = true
         viewModelScope.launch {
-            isImporting.value = true
-            when (val result = importPlaylistUseCase(url)) {
-                is ImportResult.Error -> message.value = result.message
-                is ImportResult.Success -> {
-                    inputUrl.value = ""
-                    message.value = result.message
-                    openPlaylistEvents.emit(result.playlistId)
+            try {
+                when (val result = importPlaylistUseCase(url)) {
+                    is ImportResult.Error -> message.value = result.message
+                    is ImportResult.Success -> {
+                        inputUrl.value = ""
+                        message.value = result.message
+                        openPlaylistEvents.trySend(result.playlistId)
+                    }
                 }
+            } catch (cancelled: CancellationException) {
+                throw cancelled
+            } catch (error: Exception) {
+                message.value = "No se ha podido importar el enlace. Inténtalo de nuevo."
+            } finally {
+                isImporting.value = false
             }
-            isImporting.value = false
         }
     }
 

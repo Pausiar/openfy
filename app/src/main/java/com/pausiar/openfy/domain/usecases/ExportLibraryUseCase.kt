@@ -1,13 +1,19 @@
 package com.pausiar.openfy.domain.usecases
 
+import com.pausiar.openfy.data.local.entity.PlaybackHistoryEntity
+import com.pausiar.openfy.data.local.entity.PlaylistEntity
+import com.pausiar.openfy.data.local.entity.TrackEntity
 import com.pausiar.openfy.data.repository.MusicRepository
 import com.pausiar.openfy.data.repository.SettingsRepository
 import com.pausiar.openfy.domain.models.BackupSettings
 import com.pausiar.openfy.domain.models.LibraryBackup
 import com.pausiar.openfy.domain.models.PlaybackHistoryBackup
 import com.pausiar.openfy.domain.models.PlaylistBackup
+import com.pausiar.openfy.domain.models.SettingsState
 import com.pausiar.openfy.domain.models.TrackBackup
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.withContext
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
@@ -19,9 +25,22 @@ class ExportLibraryUseCase(
 
     suspend operator fun invoke(): String {
         val settings = settingsRepository.settings.first()
+        val playlists = musicRepository.getAllPlaylists()
+        val tracks = musicRepository.getAllTracks()
+        val history = musicRepository.getAllHistory()
+        // Mapeo y serializacion de bibliotecas grandes fuera del hilo principal.
+        return withContext(Dispatchers.Default) { buildJson(settings, playlists, tracks, history) }
+    }
+
+    private fun buildJson(
+        settings: SettingsState,
+        playlists: List<PlaylistEntity>,
+        tracks: List<TrackEntity>,
+        history: List<PlaybackHistoryEntity>,
+    ): String {
         val backup = LibraryBackup(
             exportedAt = System.currentTimeMillis(),
-            playlists = musicRepository.getAllPlaylists().map { playlist ->
+            playlists = playlists.map { playlist ->
                 PlaylistBackup(
                     id = playlist.id,
                     title = playlist.title,
@@ -34,7 +53,7 @@ class ExportLibraryUseCase(
                     description = playlist.description,
                 )
             },
-            tracks = musicRepository.getAllTracks().map { track ->
+            tracks = tracks.map { track ->
                 TrackBackup(
                     id = track.id,
                     playlistId = track.playlistId,
@@ -52,7 +71,7 @@ class ExportLibraryUseCase(
                     isPlayableInApp = track.isPlayableInApp,
                 )
             },
-            history = musicRepository.getAllHistory().map { entry ->
+            history = history.map { entry ->
                 PlaybackHistoryBackup(
                     id = entry.id,
                     trackId = entry.trackId,

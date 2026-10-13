@@ -9,6 +9,7 @@ import com.pausiar.openfy.domain.models.SettingsState
 import com.pausiar.openfy.domain.models.ThemeMode
 import com.pausiar.openfy.domain.usecases.ExportLibraryUseCase
 import com.pausiar.openfy.domain.usecases.ImportLibraryDumpUseCase
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -52,7 +53,13 @@ class SettingsViewModel(
         viewModelScope.launch { settingsRepository.setShuffle(enabled) }
     }
 
-    suspend fun exportBackup(): Result<String> = runCatching { exportLibraryUseCase() }
+    suspend fun exportBackup(): Result<String> = try {
+        Result.success(exportLibraryUseCase())
+    } catch (cancelled: CancellationException) {
+        throw cancelled
+    } catch (error: Exception) {
+        Result.failure(IllegalStateException("No se ha podido exportar la biblioteca.", error))
+    }
 
     suspend fun importBackup(raw: String): Result<Unit> = importLibraryDumpUseCase(raw).onSuccess {
         message.value = "Biblioteca restaurada correctamente."
@@ -62,9 +69,15 @@ class SettingsViewModel(
 
     fun deleteAllData() {
         viewModelScope.launch {
-            musicRepository.replaceLibrary(emptyList(), emptyList(), emptyList())
-            settingsRepository.overwrite(SettingsState())
-            message.value = "Todos los datos locales han sido borrados."
+            try {
+                musicRepository.replaceLibrary(emptyList(), emptyList(), emptyList())
+                settingsRepository.overwrite(SettingsState())
+                message.value = "Todos los datos locales han sido borrados."
+            } catch (cancelled: CancellationException) {
+                throw cancelled
+            } catch (error: Exception) {
+                message.value = "No se han podido borrar los datos locales."
+            }
         }
     }
 

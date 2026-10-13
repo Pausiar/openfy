@@ -8,7 +8,7 @@ data class LibraryFilter(
 
 enum class PlaylistSort(val label: String) {
     RECENT("Recientes"),
-    TITLE("Titulo"),
+    TITLE("Título"),
     TRACK_COUNT("Canciones")
 }
 
@@ -20,6 +20,6 @@ data class TrackFilter(
 
 enum class TrackSort(val label: String) {
     POSITION("Orden original"),
-    TITLE("Titulo"),
+    TITLE("Título"),
     DURATION("Tiempo")
 }

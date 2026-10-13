@@ -9,6 +9,9 @@ import com.pausiar.openfy.domain.models.LibraryBackup
 import com.pausiar.openfy.domain.models.RepeatPreference
 import com.pausiar.openfy.domain.models.SettingsState
 import com.pausiar.openfy.domain.models.ThemeMode
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
 
 class ImportLibraryDumpUseCase(
@@ -17,8 +20,31 @@ class ImportLibraryDumpUseCase(
 ) {
     private val json = Json { ignoreUnknownKeys = true }
 
-    suspend operator fun invoke(raw: String): Result<Unit> = runCatching {
-        val backup = json.decodeFromString<LibraryBackup>(raw)
+    suspend operator fun invoke(raw: String): Result<Unit> {
+        // Decodificar y mapear un backup grande no debe bloquear el hilo principal.
+        val backup = withContext(Dispatchers.Default) {
+            try {
+                json.decodeFromString<LibraryBackup>(raw)
+            } catch (cancelled: CancellationException) {
+                throw cancelled
+            } catch (error: IllegalArgumentException) { // incluye SerializationException
+                null
+            }
+        } ?: return Result.failure(IllegalArgumentException("El archivo no es una copia de seguridad válida de Openfy."))
+
+        return try {
+            withContext(Dispatchers.Default) { restore(backup) }
+            Result.success(Unit)
+        } catch (cancelled: CancellationException) {
+            throw cancelled
+        } catch (error: Exception) {
+            Result.failure(
+                IllegalStateException("No se ha podido restaurar la copia de seguridad. Tus datos actuales no se han modificado.", error)
+            )
+        }
+    }
+
+    private suspend fun restore(backup: LibraryBackup) {
         musicRepository.replaceLibrary(
             playlists = backup.playlists.map { playlist ->
                 PlaylistEntity(
@@ -69,7 +95,7 @@ class ImportLibraryDumpUseCase(
                         it.name == settings.repeatPreference
                     } ?: RepeatPreference.OFF,
                     shuffleEnabled = settings.shuffleEnabled,
-                    lastPlaylistId = settings.lastPlaylistId,
+                    lastPlaylistId = settings.lastPlaylistId?.takeIf { id -> backup.playlists.any { it.id == id } },
                 )
             )
         }

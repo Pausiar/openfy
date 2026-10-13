@@ -19,4 +19,11 @@ interface PlaybackHistoryDao {
 
     @Query("DELETE FROM playback_history")
     suspend fun deleteAll()
+
+    /** Mantiene el historial acotado: conserva solo las `keep` reproducciones mas recientes. */
+    @Query(
+        "DELETE FROM playback_history WHERE id NOT IN " +
+            "(SELECT id FROM playback_history ORDER BY playedAt DESC, id DESC LIMIT :keep)"
+    )
+    suspend fun trimTo(keep: Int)
 }

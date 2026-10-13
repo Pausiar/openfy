@@ -6,6 +6,7 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class YouTubeListResponse<T>(
     val items: List<T> = emptyList(),
+    val nextPageToken: String? = null,
 )
 
 @Serializable

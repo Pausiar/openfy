@@ -7,28 +7,19 @@ import com.pausiar.openfy.domain.models.Platform
 class SpotifyProxyRemoteDataSource(
     private val service: SpotifyProxyService?,
 ) {
+    /** true si hay un proxy de metadatos de Spotify configurado (OPENFY_SPOTIFY_METADATA_BASE_URL). */
+    val isConfigured: Boolean get() = service != null
+
     suspend fun fetchPlaylist(playlistId: String, originalUrl: String): RemotePlaylistPayload? {
         val api = service ?: return null
         val playlist = api.getPlaylist(playlistId)
         return RemotePlaylistPayload(
-            title = playlist.title,
+            title = playlist.title.ifBlank { "Playlist de Spotify" },
             platform = Platform.SPOTIFY,
-            originalUrl = playlist.originalUrl ?: originalUrl,
+            originalUrl = originalUrl,
             imageUrl = playlist.imageUrl,
             description = playlist.description,
-            tracks = playlist.tracks.map { track ->
-                RemoteTrackPayload(
-                    title = track.title,
-                    artist = track.artist,
-                    album = track.album,
-                    durationMs = track.durationMs,
-                    imageUrl = track.imageUrl,
-                    originalUrl = track.originalUrl,
-                    previewUrl = track.previewUrl,
-                    platform = Platform.SPOTIFY,
-                    isPlayableInApp = !track.previewUrl.isNullOrBlank(),
-                )
-            },
+            tracks = playlist.tracks.map { track -> track.toPayload(fallbackUrl = null) },
         )
     }
 
@@ -36,24 +27,26 @@ class SpotifyProxyRemoteDataSource(
         val api = service ?: return null
         val track = api.getTrack(trackId)
         return RemotePlaylistPayload(
-            title = track.title,
+            title = track.title.ifBlank { "Canción de Spotify" },
             platform = Platform.SPOTIFY,
-            originalUrl = track.originalUrl ?: originalUrl,
+            originalUrl = originalUrl,
             imageUrl = track.imageUrl,
-            description = "Importado desde Spotify via backend seguro.",
-            tracks = listOf(
-                RemoteTrackPayload(
-                    title = track.title,
-                    artist = track.artist,
-                    album = track.album,
-                    durationMs = track.durationMs,
-                    imageUrl = track.imageUrl,
-                    originalUrl = track.originalUrl ?: originalUrl,
-                    previewUrl = track.previewUrl,
-                    platform = Platform.SPOTIFY,
-                    isPlayableInApp = !track.previewUrl.isNullOrBlank(),
-                )
-            ),
+            description = "Importada desde Spotify mediante el servidor proxy.",
+            tracks = listOf(track.toPayload(fallbackUrl = originalUrl)),
         )
     }
+
+    private fun SpotifyTrackDto.toPayload(fallbackUrl: String?) = RemoteTrackPayload(
+        title = title.ifBlank { "Canción de Spotify" },
+        artist = artist.ifBlank { "Spotify" },
+        album = album,
+        durationMs = durationMs,
+        imageUrl = imageUrl,
+        originalUrl = originalUrl?.takeIf { it.isNotBlank() }
+            ?: id.takeIf { it.isNotBlank() }?.let { "https://open.spotify.com/track/$it" }
+            ?: fallbackUrl,
+        previewUrl = previewUrl?.takeIf { it.isNotBlank() },
+        platform = Platform.SPOTIFY,
+        isPlayableInApp = !previewUrl.isNullOrBlank(),
+    )
 }
