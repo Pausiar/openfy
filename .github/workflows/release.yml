@@ -69,6 +69,7 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ github.event.inputs.tag || github.ref_name }}
+          target_commitish: ${{ github.sha }}
           name: Openfy ${{ github.event.inputs.tag || github.ref_name }}
           body: |
             Openfy 0.2.0: reproducción más rápida y nueva interfaz.
