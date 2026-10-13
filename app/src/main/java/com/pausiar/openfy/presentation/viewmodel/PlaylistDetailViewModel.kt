@@ -97,7 +97,7 @@ class PlaylistDetailViewModel(
             message.value = "Ninguna pista coincide con el filtro actual."
             return
         }
-        if (tracks.none { it.isPlayableInApp }) {
+        if (tracks.none { it.canPlayInApp }) {
             message.value = "Ninguna pista de esta playlist se puede reproducir en la app. " +
                 "Puedes abrirlas en su plataforma de origen."
             return
@@ -106,7 +106,7 @@ class PlaylistDetailViewModel(
     }
 
     fun playTrack(track: Track) {
-        if (!track.isPlayableInApp) {
+        if (!track.canPlayInApp) {
             message.value = "Esta pista solo puede abrirse en la app externa oficial."
             return
         }
