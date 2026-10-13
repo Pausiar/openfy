@@ -7,9 +7,9 @@ on:
   workflow_dispatch:
     inputs:
       tag:
-        description: 'Release tag to publish, e.g. v0.1.5'
+        description: 'Release tag to publish, e.g. v0.2.0'
         required: true
-        default: 'v0.1.5'
+        default: 'v0.2.0'
 
 permissions:
   contents: write
@@ -71,10 +71,11 @@ jobs:
           tag_name: ${{ github.event.inputs.tag || github.ref_name }}
           name: Openfy ${{ github.event.inputs.tag || github.ref_name }}
           body: |
-            Fix de colores en estilos y nueva APK instalable firmada.
+            Openfy 0.2.0: reproducción más rápida y nueva interfaz.
 
-            - Paleta visual consistente para app Android y web.
-            - Botón de descarga actualizado al asset latest estable.
+            - Reproducción más rápida: resolución de streams bajo demanda y precarga de la siguiente canción.
+            - Rediseño completo de la interfaz.
+            - Correcciones de errores y mejoras de rendimiento.
             - APK release firmada y verificada con apksigner en CI.
           files: |
             openfy-v*.apk

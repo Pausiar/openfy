@@ -22,8 +22,14 @@ URL esperada: `https://pausiar.github.io/openfy/`
 
 ## Version actual
 
-- Android: `0.1.5` (`versionCode` 6).
+- Android: `0.2.0` (`versionCode` 7).
 - Descarga web: `https://github.com/Pausiar/openfy/releases/latest/download/openfy-latest.apk`.
+
+## Novedades 0.2.0
+
+- Reproducción más rápida: resolución de streams bajo demanda y precarga de la siguiente canción.
+- Rediseño completo de la interfaz.
+- Correcciones de errores y mejoras de rendimiento.
 
 ## Firma release y APK
 
@@ -57,11 +63,11 @@ El workflow `.github/workflows/release.yml` crea releases al publicar tags `v*.*
 Para publicar la versión actual:
 
 ```bash
-git tag v0.1.5
-git push origin v0.1.5
+git tag v0.2.0
+git push origin v0.2.0
 ```
 
-La release adjunta dos assets: `openfy-v0.1.5.apk` y `openfy-latest.apk`. La landing de GitHub Pages apunta siempre a `openfy-latest.apk`, por lo que futuras releases solo deben volver a subir ese asset.
+La release adjunta dos assets: `openfy-v0.2.0.apk` y `openfy-latest.apk`. La landing de GitHub Pages apunta siempre a `openfy-latest.apk`, por lo que futuras releases solo deben volver a subir ese asset.
 
 ## Funciones principales
 
