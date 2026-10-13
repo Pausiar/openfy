@@ -7,10 +7,10 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.pausiar.openfy.presentation.navigation.OpenfyNavGraph
 import com.pausiar.openfy.presentation.theme.OpenfyTheme
@@ -22,7 +22,7 @@ import com.pausiar.openfy.presentation.viewmodel.SettingsViewModel
 fun OpenfyApp() {
     val settingsViewModel: SettingsViewModel = viewModel(factory = OpenfyViewModelFactory.settingsFactory())
     val playerViewModel: PlayerViewModel = viewModel(factory = OpenfyViewModelFactory.playerFactory())
-    val settingsUiState by settingsViewModel.uiState.collectAsState()
+    val settingsUiState by settingsViewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
     val notificationPermissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission(),
