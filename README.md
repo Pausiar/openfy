@@ -49,7 +49,7 @@ Luego ejecuta:
 apksigner verify --verbose app/build/outputs/apk/release/app-release.apk
 ```
 
-Si no existen credenciales de firma release, `assembleRelease` genera un APK release no firmado; usa `:app:assembleDebug` solo para pruebas locales, no para publicar una release final.
+Si no existen credenciales de firma release, `assembleRelease` firma la APK con la clave debug (instalable, pero no se actualiza sobre una versión firmada con otra clave).
 
 ## GitHub Releases
 

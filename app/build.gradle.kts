@@ -57,8 +57,11 @@ android {
     buildTypes {
         release {
             isMinifyEnabled = false
-            if (hasReleaseSigning()) {
-                signingConfig = signingConfigs.getByName("release")
+            // Sin claves de release se firma con la clave debug para que la APK sea instalable.
+            signingConfig = if (hasReleaseSigning()) {
+                signingConfigs.getByName("release")
+            } else {
+                signingConfigs.getByName("debug")
             }
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
