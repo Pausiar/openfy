@@ -15,6 +15,8 @@ import com.pausiar.openfy.data.local.model.PlaylistSummaryEntity
 import com.pausiar.openfy.data.local.model.PlaylistWithTracks
 import com.pausiar.openfy.data.remote.RemotePlaylistPayload
 import com.pausiar.openfy.data.remote.RemoteTrackPayload
+import com.pausiar.openfy.data.remote.spotify.SpotifyEmbedDataSource
+import com.pausiar.openfy.data.remote.spotify.SpotifyImportException
 import com.pausiar.openfy.data.remote.spotify.SpotifyProxyRemoteDataSource
 import com.pausiar.openfy.data.remote.youtube.YouTubeInnertubeDataSource
 import com.pausiar.openfy.data.remote.youtube.YouTubeRemoteDataSource
@@ -50,6 +52,7 @@ class MusicRepositoryImpl(
     private val youtubeRemoteDataSource: YouTubeRemoteDataSource,
     private val youtubeInnertubeDataSource: YouTubeInnertubeDataSource,
     private val spotifyRemoteDataSource: SpotifyProxyRemoteDataSource,
+    private val spotifyEmbedDataSource: SpotifyEmbedDataSource,
 ) : MusicRepository {
 
     // El mapeo a dominio se hace fuera del hilo principal (puede ser pesado en listas grandes).
@@ -67,7 +70,24 @@ class MusicRepositoryImpl(
     override fun observeRecentHistory(): Flow<List<PlaybackHistoryEntity>> = playbackHistoryDao.observeRecent()
 
     override suspend fun importFromUrl(url: String): ImportResult = withContext(Dispatchers.IO) {
-        val parsed = linkParser.parse(url)
+        var parsed = linkParser.parse(url)
+        if (parsed.type == LinkType.SPOTIFY_SHORT_LINK) {
+            // spotify.link/...: se siguen las redirecciones para obtener la URL completa.
+            val resolved = try {
+                withTimeoutOrNull(SHORT_LINK_TIMEOUT_MS) { spotifyEmbedDataSource.resolveShortLink(parsed.normalizedUrl) }
+            } catch (cancelled: CancellationException) {
+                throw cancelled
+            } catch (ignored: Exception) {
+                null
+            }
+            parsed = resolved
+                ?.let { linkParser.parse(it) }
+                ?.takeIf { it.platform == Platform.SPOTIFY && it.type != LinkType.SPOTIFY_SHORT_LINK && it.type != LinkType.INVALID }
+                ?: return@withContext ImportResult.Error(
+                    "No se ha podido abrir ese enlace corto de Spotify. Copia el enlace completo de la playlist " +
+                        "(open.spotify.com/playlist/...) e inténtalo de nuevo."
+                )
+        }
         val linkId = parsed.id
         if (parsed.type == LinkType.INVALID || linkId.isNullOrBlank()) {
             return@withContext ImportResult.Error(
@@ -77,9 +97,6 @@ class MusicRepositoryImpl(
         }
 
         val isSpotify = parsed.platform == Platform.SPOTIFY
-        if (isSpotify && !spotifyRemoteDataSource.isConfigured) {
-            return@withContext ImportResult.Error(SPOTIFY_NOT_CONFIGURED_MESSAGE)
-        }
 
         val fetched: RemotePlaylistPayload? = try {
             withTimeoutOrNull(IMPORT_TIMEOUT_MS) { fetchPayload(parsed, linkId) }
@@ -157,9 +174,39 @@ class MusicRepositoryImpl(
                 official ?: youtubeInnertubeDataSource.fetchVideo(id, url)
             }
 
-            LinkType.SPOTIFY_PLAYLIST -> spotifyRemoteDataSource.fetchPlaylist(id, url)
-            LinkType.SPOTIFY_TRACK -> spotifyRemoteDataSource.fetchTrack(id, url)
+            LinkType.SPOTIFY_PLAYLIST,
+            LinkType.SPOTIFY_TRACK,
+            LinkType.SPOTIFY_ALBUM -> fetchSpotifyPayload(parsed.type, id, url)
+
+            // Los enlaces cortos se resuelven antes de llegar aqui.
+            LinkType.SPOTIFY_SHORT_LINK,
             LinkType.INVALID -> null
+        }
+    }
+
+    /**
+     * Spotify: primero el proxy de metadatos (si esta configurado, es opcional) y, si no hay o
+     * falla, la pagina publica de embed, que no necesita configuracion.
+     */
+    private suspend fun fetchSpotifyPayload(type: LinkType, id: String, url: String): RemotePlaylistPayload? {
+        if (spotifyRemoteDataSource.isConfigured && type != LinkType.SPOTIFY_ALBUM) {
+            val viaProxy = try {
+                if (type == LinkType.SPOTIFY_TRACK) {
+                    spotifyRemoteDataSource.fetchTrack(id, url)
+                } else {
+                    spotifyRemoteDataSource.fetchPlaylist(id, url)
+                }
+            } catch (cancelled: CancellationException) {
+                throw cancelled
+            } catch (ignored: Exception) {
+                null // proxy caido o mal configurado: se usa el embed publico
+            }
+            if (viaProxy != null && viaProxy.tracks.isNotEmpty()) return viaProxy
+        }
+        return when (type) {
+            LinkType.SPOTIFY_TRACK -> spotifyEmbedDataSource.fetchTrack(id, url)
+            LinkType.SPOTIFY_ALBUM -> spotifyEmbedDataSource.fetchAlbum(id, url)
+            else -> spotifyEmbedDataSource.fetchPlaylist(id, url)
         }
     }
 
@@ -180,6 +227,11 @@ class MusicRepositoryImpl(
                 "Canción importada. No tiene preview reproducible: puedes abrirla en Spotify."
             }
 
+            LinkType.SPOTIFY_ALBUM -> {
+                val verb = if (alreadyImported) "actualizado" else "importado"
+                "Álbum $verb: ${tracks.size} canciones."
+            }
+
             else -> {
                 val verb = if (alreadyImported) "actualizada" else "importada"
                 val playable = tracks.count { it.isPlayableInApp }
@@ -195,8 +247,11 @@ class MusicRepositoryImpl(
     }
 
     private fun describeImportFailure(error: Throwable, isSpotify: Boolean): String {
-        val source = if (isSpotify) "el servidor de Spotify" else "YouTube"
+        val source = if (isSpotify) "Spotify" else "YouTube"
         return when (error) {
+            is SpotifyImportException -> error.message
+                ?: "No se ha podido leer la playlist de Spotify. Comprueba que es pública."
+
             is HttpException -> when (error.code()) {
                 401, 403 -> "No se ha podido acceder a esa playlist: es privada o $source ha denegado el acceso."
                 404 -> "No se ha encontrado esa playlist. Comprueba el enlace y que sea pública."
@@ -417,10 +472,7 @@ class MusicRepositoryImpl(
         const val MAX_IMPORTED_TRACKS = 5_000
         const val MAX_HISTORY_ENTRIES = 500
         const val LOCAL_METADATA_PARALLELISM = 4
-        const val SPOTIFY_NOT_CONFIGURED_MESSAGE =
-            "Importar desde Spotify requiere un servidor proxy de metadatos que aún no está configurado. " +
-                "Define OPENFY_SPOTIFY_METADATA_BASE_URL en local.properties y vuelve a compilar la app. " +
-                "Mientras tanto puedes importar playlists y vídeos de YouTube."
+        const val SHORT_LINK_TIMEOUT_MS = 20_000L
     }
 }
 

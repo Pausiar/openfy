@@ -3,7 +3,7 @@ package com.pausiar.openfy.utils.validators
 object LinkValidators {
     private val URL_REGEX = Regex("""(https?://[^\s<>"']+|spotify:[A-Za-z0-9:_-]+)""", RegexOption.IGNORE_CASE)
     private val BARE_HOST_REGEX = Regex(
-        """^(?:[a-z0-9-]+\.)*(?:youtube\.com|youtu\.be|spotify\.com)/\S*""",
+        """^(?:[a-z0-9-]+\.)*(?:youtube\.com|youtu\.be|spotify\.com|spotify\.link)/\S*""",
         RegexOption.IGNORE_CASE,
     )
 

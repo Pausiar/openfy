@@ -22,7 +22,7 @@ URL esperada: `https://pausiar.github.io/openfy/`
 
 ## Version actual
 
-- Android: `0.2.1` (`versionCode` 8).
+- Android: `0.2.2` (`versionCode` 9).
 - Descarga web: `https://github.com/Pausiar/openfy/releases/latest/download/openfy-latest.apk`.
 
 ## Novedades 0.2.0
@@ -140,7 +140,7 @@ app/src/main/java/com/pausiar/openfy/
 ### Responsabilidades por capa
 
 - `data/local`: Room entities, DAOs y base de datos.
-- `data/remote`: integraciones permitidas con YouTube Data API y un proxy seguro opcional para Spotify.
+- `data/remote`: integraciones con YouTube (Data API opcional o endpoints publicos) y Spotify (pagina publica de embed, con un proxy opcional).
 - `data/repository`: logica de importacion, biblioteca local, historial y preferencias.
 - `domain/models`: modelos tipados de negocio, filtros y backups.
 - `domain/usecases`: casos de uso para importar, observar playlists y exportar/importar biblioteca.
@@ -153,15 +153,15 @@ app/src/main/java/com/pausiar/openfy/
 
 ### Soporte actual sin configuracion extra
 
-- Spotify playlist: crea una referencia local de la playlist.
-- Spotify track: crea una referencia local de la cancion.
+- Spotify playlist, album o cancion (tambien enlaces cortos `spotify.link`): no necesita ninguna configuracion. Openfy lee la pagina publica de embed de Spotify (`open.spotify.com/embed/...`) para obtener titulo, artistas, duracion, portada y preview. La playlist debe ser publica. Si la playlist tiene mas de ~100 canciones, se intenta completar con la Web API usando el token anonimo del embed (hasta 2000); si no es posible, se importan las que trae el embed.
+- Las canciones de Spotify se reproducen buscando "artista - titulo" en YouTube.
 - YouTube playlist: crea una referencia local y puede enriquecerse con API oficial.
 - YouTube video: crea una referencia local con thumbnail publica.
 
 ### Soporte enriquecido opcional
 
 - YouTube: si configuras `OPENFY_YOUTUBE_API_KEY`, Openfy consulta la YouTube Data API para traer titulos, descripciones, thumbnails y lista de items.
-- Spotify: si configuras `OPENFY_SPOTIFY_METADATA_BASE_URL`, Openfy llama a un backend/proxy seguro para obtener metadatos y previews oficiales sin exponer secretos en el cliente.
+- Spotify (opcional, ya no es necesario): si configuras `OPENFY_SPOTIFY_METADATA_BASE_URL`, Openfy prueba primero ese backend/proxy y, si no responde, usa automaticamente el embed publico.
 
 ## Configuracion local
 

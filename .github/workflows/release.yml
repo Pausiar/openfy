@@ -7,9 +7,9 @@ on:
   workflow_dispatch:
     inputs:
       tag:
-        description: 'Release tag to publish, e.g. v0.2.1'
+        description: 'Release tag to publish, e.g. v0.2.2'
         required: true
-        default: 'v0.2.1'
+        default: 'v0.2.2'
 
 permissions:
   contents: write
@@ -67,7 +67,7 @@ jobs:
           target_commitish: ${{ github.sha }}
           name: Openfy ${{ github.event.inputs.tag || github.ref_name }}
           body: |
-            Openfy 0.2.1: reproducción más rápida y nueva interfaz.
+            Openfy 0.2.2: reproducción más rápida y nueva interfaz.
 
             - Reproducción más rápida: resolución de streams bajo demanda y precarga de la siguiente canción.
             - Rediseño completo de la interfaz.

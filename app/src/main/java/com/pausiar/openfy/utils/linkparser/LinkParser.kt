@@ -24,17 +24,13 @@ class LinkParser {
         }
     }
 
-    /** spotify:playlist:ID, spotify:track:ID, spotify:user:NAME:playlist:ID */
+    /** spotify:playlist:ID, spotify:track:ID, spotify:album:ID, spotify:user:NAME:playlist:ID */
     private fun parseSpotifyUri(uri: String, original: String): ParsedLink {
         val parts = uri.split(':')
-        val typeIndex = parts.indexOfFirst { it.equals("playlist", true) || it.equals("track", true) }
+        val typeIndex = parts.indexOfFirst { part -> SPOTIFY_TYPES.any { it.equals(part, ignoreCase = true) } }
         val id = parts.getOrNull(typeIndex + 1)?.takeIf { typeIndex >= 0 && SPOTIFY_ID_REGEX.matches(it) }
             ?: return invalid(original, uri)
-        return if (parts[typeIndex].equals("playlist", true)) {
-            spotifyPlaylist(original, id)
-        } else {
-            spotifyTrack(original, id)
-        }
+        return spotifyByType(parts[typeIndex].lowercase(), original, id)
     }
 
     private fun parseHttpUrl(url: String, original: String): ParsedLink {
@@ -44,6 +40,8 @@ class LinkParser {
 
         return when {
             hostIs(host, "spotify.com") -> parseSpotifyWeb(segments, original, url)
+            hostIs(host, "spotify.link") || host == "spotify.app.link" ->
+                parseSpotifyShortLink(host, segments, original, url)
             hostIs(host, "youtube.com") || hostIs(host, "youtube-nocookie.com") || host == "youtu.be" ->
                 parseYouTube(uri, host, segments, original, url)
 
@@ -53,13 +51,26 @@ class LinkParser {
 
     /**
      * Soporta open.spotify.com/playlist/ID, /intl-es/playlist/ID, /embed/playlist/ID,
-     * /user/NAME/playlist/ID y ?si=... (los parametros se descartan).
+     * /user/NAME/playlist/ID, /album/ID y ?si=... (los parametros se descartan).
      */
     private fun parseSpotifyWeb(segments: List<String>, original: String, url: String): ParsedLink {
-        val typeIndex = segments.indexOfFirst { it == "playlist" || it == "track" }
+        val typeIndex = segments.indexOfFirst { it in SPOTIFY_TYPES }
         val id = segments.getOrNull(typeIndex + 1)?.takeIf { typeIndex >= 0 && SPOTIFY_ID_REGEX.matches(it) }
             ?: return invalid(original, url)
-        return if (segments[typeIndex] == "playlist") spotifyPlaylist(original, id) else spotifyTrack(original, id)
+        return spotifyByType(segments[typeIndex], original, id)
+    }
+
+    /** spotify.link/CODIGO: el destino real se resuelve (siguiendo redirecciones) al importar. */
+    private fun parseSpotifyShortLink(host: String, segments: List<String>, original: String, url: String): ParsedLink {
+        val code = segments.firstOrNull()?.takeIf { SPOTIFY_SHORT_CODE_REGEX.matches(it) }
+            ?: return invalid(original, url)
+        return parsed(original, "https://$host/$code", LinkType.SPOTIFY_SHORT_LINK, Platform.SPOTIFY, code)
+    }
+
+    private fun spotifyByType(type: String, original: String, id: String): ParsedLink = when (type) {
+        "playlist" -> spotifyPlaylist(original, id)
+        "album" -> parsed(original, "https://open.spotify.com/album/$id", LinkType.SPOTIFY_ALBUM, Platform.SPOTIFY, id)
+        else -> spotifyTrack(original, id)
     }
 
     private fun parseYouTube(
@@ -123,6 +134,8 @@ class LinkParser {
 
     private companion object {
         val SPOTIFY_ID_REGEX = Regex("[A-Za-z0-9]{10,40}")
+        val SPOTIFY_SHORT_CODE_REGEX = Regex("[A-Za-z0-9_-]{4,64}")
+        val SPOTIFY_TYPES = setOf("playlist", "track", "album")
         val YOUTUBE_LIST_REGEX = Regex("[A-Za-z0-9_-]{10,64}")
         val YOUTUBE_VIDEO_REGEX = Regex("[A-Za-z0-9_-]{11}")
         val VIDEO_PATH_PREFIXES = setOf("shorts", "embed", "live", "v")

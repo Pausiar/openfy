@@ -4,6 +4,7 @@ import android.app.Application
 import androidx.room.Room
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
 import com.pausiar.openfy.data.local.OpenfyDatabase
+import com.pausiar.openfy.data.remote.spotify.SpotifyEmbedDataSource
 import com.pausiar.openfy.data.remote.spotify.SpotifyProxyRemoteDataSource
 import com.pausiar.openfy.data.remote.spotify.SpotifyProxyService
 import com.pausiar.openfy.data.remote.youtube.YouTubeApiService
@@ -96,6 +97,9 @@ class AppContainer(
         service = spotifyProxyService,
     )
 
+    /** Importacion de Spotify sin configuracion (pagina publica de embed). */
+    private val spotifyEmbedDataSource = SpotifyEmbedDataSource(httpClient = okHttpClient)
+
     private val pipedStreamDataSource = PipedStreamDataSource(httpClient = okHttpClient)
 
     /** Compartido con OpenfyPlaybackService (mismo proceso) para resolver streams y su cache. */
@@ -113,6 +117,7 @@ class AppContainer(
         youtubeRemoteDataSource = youtubeRemoteDataSource,
         youtubeInnertubeDataSource = youtubeInnertubeDataSource,
         spotifyRemoteDataSource = spotifyRemoteDataSource,
+        spotifyEmbedDataSource = spotifyEmbedDataSource,
     )
 
     val settingsRepository: SettingsRepository = SettingsRepositoryImpl(application)

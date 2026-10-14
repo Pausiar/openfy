@@ -47,6 +47,7 @@ class SpotifyProxyRemoteDataSource(
             ?: fallbackUrl,
         previewUrl = previewUrl?.takeIf { it.isNotBlank() },
         platform = Platform.SPOTIFY,
-        isPlayableInApp = !previewUrl.isNullOrBlank(),
+        // Reproducible via busqueda en YouTube ("artista - titulo") si hay titulo real, o via preview.
+        isPlayableInApp = title.isNotBlank() || !previewUrl.isNullOrBlank(),
     )
 }
