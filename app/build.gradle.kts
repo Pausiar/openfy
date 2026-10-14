@@ -28,11 +28,11 @@ android {
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "com.pausiar.openfy"
+        applicationId = "com.pausiar.openfy.player"
         minSdk = 28
         targetSdk = 35
-        versionCode = 7
-        versionName = "0.2.0"
+        versionCode = 8
+        versionName = "0.2.1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {

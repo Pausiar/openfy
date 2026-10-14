@@ -22,7 +22,7 @@ URL esperada: `https://pausiar.github.io/openfy/`
 
 ## Version actual
 
-- Android: `0.2.0` (`versionCode` 7).
+- Android: `0.2.1` (`versionCode` 8).
 - Descarga web: `https://github.com/Pausiar/openfy/releases/latest/download/openfy-latest.apk`.
 
 ## Novedades 0.2.0
