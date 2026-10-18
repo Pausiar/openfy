@@ -16,6 +16,7 @@ interface YouTubeApiService {
         @Query("part") part: String = "snippet,contentDetails",
         @Query("playlistId") playlistId: String,
         @Query("maxResults") maxResults: Int = 50,
+        @Query("pageToken") pageToken: String? = null,
         @Query("key") key: String,
     ): YouTubeListResponse<YouTubePlaylistItemDto>
 

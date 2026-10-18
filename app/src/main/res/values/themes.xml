@@ -1,4 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <style name="Theme.Openfy" parent="Theme.Material3.DayNight.NoActionBar" />
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!--
+        Window colors match the Compose dark background (Night50 #0B0A0F) so there is no
+        white flash between the splash screen and the first frame. Edge-to-edge is enabled
+        from MainActivity (enableEdgeToEdge), so the system bars are transparent.
+    -->
+    <style name="Theme.Openfy" parent="Theme.Material3.DayNight.NoActionBar">
+        <item name="android:windowBackground">@color/openfy_window_background</item>
+        <item name="colorPrimary">@color/openfy_accent</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+        <item name="android:windowSplashScreenBackground" tools:targetApi="31">@color/openfy_window_background</item>
+    </style>
+
+    <color name="openfy_window_background">#FF0B0A0F</color>
+    <color name="openfy_accent">#FFFF6A55</color>
 </resources>

@@ -5,19 +5,27 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import okhttp3.OkHttpClient
 import okhttp3.Request
+import java.util.concurrent.TimeUnit
 
 class PipedStreamDataSource(
-    private val httpClient: OkHttpClient,
+    httpClient: OkHttpClient,
 ) {
     private val json = Json { ignoreUnknownKeys = true }
 
-    fun resolveStreamUrl(videoId: String): String? {
-        val endpoints = listOf(
-            "https://pipedapi.kavin.rocks",
-            "https://pipedapi.adminforge.de",
-            "https://api.piped.yt",
-        )
+    // Las instancias de Piped suelen estar caidas o lentas: timeouts cortos para no bloquear.
+    private val httpClient: OkHttpClient = httpClient.newBuilder()
+        .connectTimeout(5, TimeUnit.SECONDS)
+        .readTimeout(8, TimeUnit.SECONDS)
+        .callTimeout(10, TimeUnit.SECONDS)
+        .build()
 
+    val endpoints: List<String> = listOf(
+        "https://pipedapi.kavin.rocks",
+        "https://pipedapi.adminforge.de",
+        "https://api.piped.yt",
+    )
+
+    fun resolveStreamUrl(videoId: String): String? {
         for (baseUrl in endpoints) {
             val url = resolveFromEndpoint(baseUrl, videoId) ?: continue
             return url
@@ -25,7 +33,7 @@ class PipedStreamDataSource(
         return null
     }
 
-    private fun resolveFromEndpoint(baseUrl: String, videoId: String): String? {
+    fun resolveFromEndpoint(baseUrl: String, videoId: String): String? {
         val request = Request.Builder()
             .url("$baseUrl/streams/$videoId")
             .header("User-Agent", YouTubeHttp.USER_AGENT)
@@ -40,14 +48,18 @@ class PipedStreamDataSource(
             runCatching {
                 val payload = json.decodeFromString<PipedStreamResponse>(body)
                 payload.audioStreams
-                    ?.maxByOrNull { it.bitrate ?: 0 }
+                    ?.filter { !it.url.isNullOrBlank() }
+                    ?.maxWithOrNull(
+                        compareBy<PipedStream>(
+                            { it.audioTrackType == null || it.audioTrackType.equals("ORIGINAL", ignoreCase = true) },
+                            { it.bitrate ?: 0 },
+                        )
+                    )
                     ?.url
-                    ?.takeIf { it.isNotBlank() }
                     ?: payload.videoStreams
-                        ?.filterNot { it.videoOnly == true }
+                        ?.filter { it.videoOnly != true && !it.url.isNullOrBlank() }
                         ?.maxByOrNull { it.bitrate ?: 0 }
                         ?.url
-                        ?.takeIf { it.isNotBlank() }
             }.getOrNull()
         }
     }
@@ -63,5 +75,6 @@ class PipedStreamDataSource(
         val url: String? = null,
         val bitrate: Int? = null,
         @SerialName("videoOnly") val videoOnly: Boolean? = null,
+        @SerialName("audioTrackType") val audioTrackType: String? = null,
     )
 }

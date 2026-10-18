@@ -7,9 +7,9 @@ on:
   workflow_dispatch:
     inputs:
       tag:
-        description: 'Release tag to publish, e.g. v0.1.5'
+        description: 'Release tag to publish, e.g. v0.2.2'
         required: true
-        default: 'v0.1.5'
+        default: 'v0.2.2'
 
 permissions:
   contents: write
@@ -28,28 +28,23 @@ jobs:
           java-version: '17'
           cache: gradle
 
-      - name: Validate release signing secrets
+      - name: Decode release keystore (if configured)
         env:
           OPENFY_KEYSTORE_BASE64: ${{ secrets.OPENFY_KEYSTORE_BASE64 }}
           OPENFY_KEYSTORE_PASSWORD: ${{ secrets.OPENFY_KEYSTORE_PASSWORD }}
           OPENFY_KEY_ALIAS: ${{ secrets.OPENFY_KEY_ALIAS }}
           OPENFY_KEY_PASSWORD: ${{ secrets.OPENFY_KEY_PASSWORD }}
         run: |
-          test -n "$OPENFY_KEYSTORE_BASE64"
-          test -n "$OPENFY_KEYSTORE_PASSWORD"
-          test -n "$OPENFY_KEY_ALIAS"
-          test -n "$OPENFY_KEY_PASSWORD"
+          if [ -n "$OPENFY_KEYSTORE_BASE64" ] && [ -n "$OPENFY_KEYSTORE_PASSWORD" ] && [ -n "$OPENFY_KEY_ALIAS" ] && [ -n "$OPENFY_KEY_PASSWORD" ]; then
+            mkdir -p "$RUNNER_TEMP/openfy-signing"
+            echo "$OPENFY_KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/openfy-signing/openfy-release.jks"
+            echo "OPENFY_KEYSTORE_PATH=$RUNNER_TEMP/openfy-signing/openfy-release.jks" >> "$GITHUB_ENV"
+          else
+            echo "::warning::Release signing secrets not configured; the APK will be signed with a debug key."
+          fi
 
-      - name: Decode release keystore
+      - name: Build release APK
         env:
-          OPENFY_KEYSTORE_BASE64: ${{ secrets.OPENFY_KEYSTORE_BASE64 }}
-        run: |
-          mkdir -p "$RUNNER_TEMP/openfy-signing"
-          echo "$OPENFY_KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/openfy-signing/openfy-release.jks"
-
-      - name: Build signed release APK
-        env:
-          OPENFY_KEYSTORE_PATH: ${{ runner.temp }}/openfy-signing/openfy-release.jks
           OPENFY_KEYSTORE_PASSWORD: ${{ secrets.OPENFY_KEYSTORE_PASSWORD }}
           OPENFY_KEY_ALIAS: ${{ secrets.OPENFY_KEY_ALIAS }}
           OPENFY_KEY_PASSWORD: ${{ secrets.OPENFY_KEY_PASSWORD }}
@@ -69,12 +64,14 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ github.event.inputs.tag || github.ref_name }}
+          target_commitish: ${{ github.sha }}
           name: Openfy ${{ github.event.inputs.tag || github.ref_name }}
           body: |
-            Fix de colores en estilos y nueva APK instalable firmada.
+            Openfy 0.2.2: reproducción más rápida y nueva interfaz.
 
-            - Paleta visual consistente para app Android y web.
-            - Botón de descarga actualizado al asset latest estable.
+            - Reproducción más rápida: resolución de streams bajo demanda y precarga de la siguiente canción.
+            - Rediseño completo de la interfaz.
+            - Correcciones de errores y mejoras de rendimiento.
             - APK release firmada y verificada con apksigner en CI.
           files: |
             openfy-v*.apk

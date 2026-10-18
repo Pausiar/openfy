@@ -4,6 +4,7 @@ import android.app.Application
 import androidx.room.Room
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
 import com.pausiar.openfy.data.local.OpenfyDatabase
+import com.pausiar.openfy.data.remote.spotify.SpotifyEmbedDataSource
 import com.pausiar.openfy.data.remote.spotify.SpotifyProxyRemoteDataSource
 import com.pausiar.openfy.data.remote.spotify.SpotifyProxyService
 import com.pausiar.openfy.data.remote.youtube.YouTubeApiService
@@ -31,6 +32,7 @@ import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
+import java.util.concurrent.TimeUnit
 
 class AppContainer(
     application: Application,
@@ -47,6 +49,10 @@ class AppContainer(
                 }
             }
         )
+        .connectTimeout(10, TimeUnit.SECONDS)
+        .readTimeout(15, TimeUnit.SECONDS)
+        .writeTimeout(15, TimeUnit.SECONDS)
+        .retryOnConnectionFailure(true)
         .build()
 
     init {
@@ -57,7 +63,10 @@ class AppContainer(
         application,
         OpenfyDatabase::class.java,
         "openfy.db",
-    ).fallbackToDestructiveMigration().build()
+    )
+        .addMigrations(OpenfyDatabase.MIGRATION_1_2)
+        .fallbackToDestructiveMigration()
+        .build()
 
     private val linkParser = LinkParser()
 
@@ -88,9 +97,13 @@ class AppContainer(
         service = spotifyProxyService,
     )
 
+    /** Importacion de Spotify sin configuracion (pagina publica de embed). */
+    private val spotifyEmbedDataSource = SpotifyEmbedDataSource(httpClient = okHttpClient)
+
     private val pipedStreamDataSource = PipedStreamDataSource(httpClient = okHttpClient)
 
-    private val youtubeStreamResolver = YouTubeStreamResolver(
+    /** Compartido con OpenfyPlaybackService (mismo proceso) para resolver streams y su cache. */
+    val youtubeStreamResolver = YouTubeStreamResolver(
         httpClient = okHttpClient,
         pipedStreamDataSource = pipedStreamDataSource,
     )
@@ -104,6 +117,7 @@ class AppContainer(
         youtubeRemoteDataSource = youtubeRemoteDataSource,
         youtubeInnertubeDataSource = youtubeInnertubeDataSource,
         spotifyRemoteDataSource = spotifyRemoteDataSource,
+        spotifyEmbedDataSource = spotifyEmbedDataSource,
     )
 
     val settingsRepository: SettingsRepository = SettingsRepositoryImpl(application)
@@ -112,7 +126,6 @@ class AppContainer(
         appContext = application,
         musicRepository = musicRepository,
         settingsRepository = settingsRepository,
-        youtubeStreamResolver = youtubeStreamResolver,
     )
 
     val detectLinkUseCase = DetectLinkUseCase(linkParser)

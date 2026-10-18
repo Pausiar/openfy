@@ -22,8 +22,14 @@ URL esperada: `https://pausiar.github.io/openfy/`
 
 ## Version actual
 
-- Android: `0.1.5` (`versionCode` 6).
+- Android: `0.2.2` (`versionCode` 9).
 - Descarga web: `https://github.com/Pausiar/openfy/releases/latest/download/openfy-latest.apk`.
+
+## Novedades 0.2.0
+
+- Reproducción más rápida: resolución de streams bajo demanda y precarga de la siguiente canción.
+- Rediseño completo de la interfaz.
+- Correcciones de errores y mejoras de rendimiento.
 
 ## Firma release y APK
 
@@ -43,7 +49,7 @@ Luego ejecuta:
 apksigner verify --verbose app/build/outputs/apk/release/app-release.apk
 ```
 
-Si no existen credenciales de firma release, `assembleRelease` genera un APK release no firmado; usa `:app:assembleDebug` solo para pruebas locales, no para publicar una release final.
+Si no existen credenciales de firma release, `assembleRelease` firma la APK con la clave debug (instalable, pero no se actualiza sobre una versión firmada con otra clave).
 
 ## GitHub Releases
 
@@ -57,11 +63,11 @@ El workflow `.github/workflows/release.yml` crea releases al publicar tags `v*.*
 Para publicar la versión actual:
 
 ```bash
-git tag v0.1.5
-git push origin v0.1.5
+git tag v0.2.0
+git push origin v0.2.0
 ```
 
-La release adjunta dos assets: `openfy-v0.1.5.apk` y `openfy-latest.apk`. La landing de GitHub Pages apunta siempre a `openfy-latest.apk`, por lo que futuras releases solo deben volver a subir ese asset.
+La release adjunta dos assets: `openfy-v0.2.0.apk` y `openfy-latest.apk`. La landing de GitHub Pages apunta siempre a `openfy-latest.apk`, por lo que futuras releases solo deben volver a subir ese asset.
 
 ## Funciones principales
 
@@ -134,7 +140,7 @@ app/src/main/java/com/pausiar/openfy/
 ### Responsabilidades por capa
 
 - `data/local`: Room entities, DAOs y base de datos.
-- `data/remote`: integraciones permitidas con YouTube Data API y un proxy seguro opcional para Spotify.
+- `data/remote`: integraciones con YouTube (Data API opcional o endpoints publicos) y Spotify (pagina publica de embed, con un proxy opcional).
 - `data/repository`: logica de importacion, biblioteca local, historial y preferencias.
 - `domain/models`: modelos tipados de negocio, filtros y backups.
 - `domain/usecases`: casos de uso para importar, observar playlists y exportar/importar biblioteca.
@@ -147,15 +153,15 @@ app/src/main/java/com/pausiar/openfy/
 
 ### Soporte actual sin configuracion extra
 
-- Spotify playlist: crea una referencia local de la playlist.
-- Spotify track: crea una referencia local de la cancion.
+- Spotify playlist, album o cancion (tambien enlaces cortos `spotify.link`): no necesita ninguna configuracion. Openfy lee la pagina publica de embed de Spotify (`open.spotify.com/embed/...`) para obtener titulo, artistas, duracion, portada y preview. La playlist debe ser publica. Si la playlist tiene mas de ~100 canciones, se intenta completar con la Web API usando el token anonimo del embed (hasta 2000); si no es posible, se importan las que trae el embed.
+- Las canciones de Spotify se reproducen buscando "artista - titulo" en YouTube.
 - YouTube playlist: crea una referencia local y puede enriquecerse con API oficial.
 - YouTube video: crea una referencia local con thumbnail publica.
 
 ### Soporte enriquecido opcional
 
 - YouTube: si configuras `OPENFY_YOUTUBE_API_KEY`, Openfy consulta la YouTube Data API para traer titulos, descripciones, thumbnails y lista de items.
-- Spotify: si configuras `OPENFY_SPOTIFY_METADATA_BASE_URL`, Openfy llama a un backend/proxy seguro para obtener metadatos y previews oficiales sin exponer secretos en el cliente.
+- Spotify (opcional, ya no es necesario): si configuras `OPENFY_SPOTIFY_METADATA_BASE_URL`, Openfy prueba primero ese backend/proxy y, si no responde, usa automaticamente el embed publico.
 
 ## Configuracion local
 

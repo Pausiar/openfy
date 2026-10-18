@@ -1,55 +1,94 @@
 package com.pausiar.openfy.presentation.screens
 
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material.icons.automirrored.rounded.ArrowBack
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
+import androidx.compose.material.icons.automirrored.rounded.OpenInNew
+import androidx.compose.material.icons.rounded.Block
+import androidx.compose.material.icons.rounded.CheckCircle
+import androidx.compose.material.icons.rounded.Lock
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
-import com.pausiar.openfy.presentation.components.EmptyStateCard
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
+import com.pausiar.openfy.presentation.components.InfoCard
+import com.pausiar.openfy.presentation.components.OpenfyLazyColumn
+import com.pausiar.openfy.presentation.components.OpenfyTopBar
+import com.pausiar.openfy.presentation.theme.OpenfySpacing
+
+private class LegalSection(
+    val key: String,
+    val title: String,
+    val body: String,
+    val icon: ImageVector,
+)
+
+private val LegalSections = listOf(
+    LegalSection(
+        key = "does",
+        title = "Qué hace Openfy",
+        body = "Openfy organiza los enlaces que importas, guarda metadatos en tu dispositivo y reproduce únicamente " +
+            "archivos locales, demos incluidas, previews oficiales o streams autorizados.",
+        icon = Icons.Rounded.CheckCircle,
+    ),
+    LegalSection(
+        key = "doesnt",
+        title = "Qué no hace Openfy",
+        body = "La app no descarga audio protegido, no evita DRM, no bloquea anuncios de terceros y no intenta " +
+            "reproducir el contenido completo de Spotify o YouTube sin permiso explícito.",
+        icon = Icons.Rounded.Block,
+    ),
+    LegalSection(
+        key = "platforms",
+        title = "Plataformas externas",
+        body = "Spotify y YouTube siguen sujetos a sus propias condiciones de uso. Cuando una canción no puede sonar " +
+            "dentro de Openfy, la app te dirige a la aplicación oficial o al navegador.",
+        icon = Icons.AutoMirrored.Rounded.OpenInNew,
+    ),
+    LegalSection(
+        key = "privacy",
+        title = "Privacidad y datos",
+        body = "Tu biblioteca, favoritos, historial y ajustes se guardan solo en tu dispositivo y puedes exportarlos " +
+            "o importarlos en formato JSON cuando quieras.",
+        icon = Icons.Rounded.Lock,
+    ),
+)
 
 @Composable
 fun LegalInfoScreen(onBack: () -> Unit) {
-    LazyColumn(
-        contentPadding = PaddingValues(20.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp),
-    ) {
-        item {
-            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Rounded.ArrowBack, contentDescription = "Volver") }
-                Text("Uso legal", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+    Column(modifier = Modifier.fillMaxSize()) {
+        OpenfyTopBar(
+            title = "Información legal",
+            onBack = onBack,
+            modifier = Modifier.padding(horizontal = OpenfySpacing.gutter),
+        )
+        OpenfyLazyColumn(
+            contentPadding = OpenfySpacing.screenContentPadding,
+            verticalArrangement = Arrangement.spacedBy(OpenfySpacing.md),
+        ) {
+            item(key = "intro", contentType = "intro") {
+                Text(
+                    text = "Openfy es un reproductor y organizador de música. Esto es lo que debes saber sobre cómo " +
+                        "funciona y cómo trata tu información.",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
             }
-        }
-        item {
-            EmptyStateCard(
-                title = "Que hace Openfy",
-                subtitle = "Openfy organiza enlaces importados, guarda metadatos locales y reproduce unicamente archivos locales, demos incluidas, previews oficiales o streams autorizados.",
-            )
-        }
-        item {
-            EmptyStateCard(
-                title = "Que no hace Openfy",
-                subtitle = "La app no descarga audio protegido, no evita DRM, no bloquea anuncios de terceros y no intenta reproducir contenido completo de Spotify o YouTube sin permiso explicito.",
-            )
-        }
-        item {
-            EmptyStateCard(
-                title = "Plataformas externas",
-                subtitle = "Spotify y YouTube siguen sujetos a sus propias condiciones de uso. Cuando una pista no puede sonar dentro de Openfy, la app dirige al usuario a la aplicacion oficial o al navegador.",
-            )
-        }
-        item {
-            EmptyStateCard(
-                title = "Privacidad y datos",
-                subtitle = "La biblioteca, favoritos, historial y ajustes se guardan localmente en el dispositivo y pueden exportarse o importarse en JSON a eleccion del usuario.",
-            )
+            items(
+                items = LegalSections,
+                key = { it.key },
+                contentType = { "legal" },
+            ) { section ->
+                InfoCard(
+                    title = section.title,
+                    body = section.body,
+                    icon = section.icon,
+                )
+            }
         }
     }
 }

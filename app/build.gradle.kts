@@ -28,11 +28,11 @@ android {
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "com.pausiar.openfy"
+        applicationId = "com.pausiar.openfy.player"
         minSdk = 28
         targetSdk = 35
-        versionCode = 6
-        versionName = "0.1.5"
+        versionCode = 9
+        versionName = "0.2.2"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -57,8 +57,11 @@ android {
     buildTypes {
         release {
             isMinifyEnabled = false
-            if (hasReleaseSigning()) {
-                signingConfig = signingConfigs.getByName("release")
+            // Sin claves de release se firma con la clave debug para que la APK sea instalable.
+            signingConfig = if (hasReleaseSigning()) {
+                signingConfigs.getByName("release")
+            } else {
+                signingConfigs.getByName("debug")
             }
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),

@@ -20,4 +20,8 @@ data class Track(
         get() = localUri
             ?: previewUrl
             ?: originalUrl?.takeIf { isPlayableInApp && platform == Platform.YOUTUBE }
+
+    /** Reproducible dentro de Openfy: YouTube/local/preview, o Spotify mediante búsqueda en YouTube. */
+    val canPlayInApp: Boolean
+        get() = isPlayableInApp || !localUri.isNullOrBlank() || platform == Platform.SPOTIFY
 }

@@ -15,7 +15,7 @@ import androidx.room.PrimaryKey
             onDelete = ForeignKey.CASCADE,
         ),
     ],
-    indices = [Index("playlistId")],
+    indices = [Index(value = ["playlistId", "position"])],
 )
 data class TrackEntity(
     @PrimaryKey(autoGenerate = true) val id: Long = 0,

@@ -15,21 +15,33 @@ import com.pausiar.openfy.data.local.model.PlaylistSummaryEntity
 import com.pausiar.openfy.data.local.model.PlaylistWithTracks
 import com.pausiar.openfy.data.remote.RemotePlaylistPayload
 import com.pausiar.openfy.data.remote.RemoteTrackPayload
+import com.pausiar.openfy.data.remote.spotify.SpotifyEmbedDataSource
+import com.pausiar.openfy.data.remote.spotify.SpotifyImportException
 import com.pausiar.openfy.data.remote.spotify.SpotifyProxyRemoteDataSource
 import com.pausiar.openfy.data.remote.youtube.YouTubeInnertubeDataSource
 import com.pausiar.openfy.data.remote.youtube.YouTubeRemoteDataSource
 import com.pausiar.openfy.domain.models.ImportResult
 import com.pausiar.openfy.domain.models.LinkType
+import com.pausiar.openfy.domain.models.ParsedLink
 import com.pausiar.openfy.domain.models.Platform
 import com.pausiar.openfy.domain.models.Playlist
 import com.pausiar.openfy.domain.models.PlaylistSummary
 import com.pausiar.openfy.domain.models.Track
 import com.pausiar.openfy.utils.linkparser.LinkParser
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
-import java.io.FileNotFoundException
+import kotlinx.coroutines.withTimeoutOrNull
+import kotlinx.serialization.SerializationException
+import retrofit2.HttpException
+import java.io.IOException
 
 class MusicRepositoryImpl(
     private val appContext: Context,
@@ -40,110 +52,258 @@ class MusicRepositoryImpl(
     private val youtubeRemoteDataSource: YouTubeRemoteDataSource,
     private val youtubeInnertubeDataSource: YouTubeInnertubeDataSource,
     private val spotifyRemoteDataSource: SpotifyProxyRemoteDataSource,
+    private val spotifyEmbedDataSource: SpotifyEmbedDataSource,
 ) : MusicRepository {
 
+    // El mapeo a dominio se hace fuera del hilo principal (puede ser pesado en listas grandes).
     override fun observePlaylistSummaries(): Flow<List<PlaylistSummary>> =
-        playlistDao.observePlaylistSummaries().map { list -> list.map { it.toDomain() } }
+        playlistDao.observePlaylistSummaries()
+            .map { list -> list.map { it.toDomain() } }
+            .distinctUntilChanged()
+            .flowOn(Dispatchers.Default)
 
     override fun observePlaylist(playlistId: Long): Flow<Playlist?> =
-        playlistDao.observePlaylist(playlistId).map { it?.toDomain() }
+        playlistDao.observePlaylist(playlistId)
+            .map { it?.toDomain() }
+            .flowOn(Dispatchers.Default)
 
     override fun observeRecentHistory(): Flow<List<PlaybackHistoryEntity>> = playbackHistoryDao.observeRecent()
 
     override suspend fun importFromUrl(url: String): ImportResult = withContext(Dispatchers.IO) {
-        val parsed = linkParser.parse(url)
-        if (parsed.type == LinkType.INVALID || parsed.id.isNullOrBlank()) {
-            return@withContext ImportResult.Error("No he podido reconocer ese enlace de Spotify o YouTube.")
-        }
-
-        val payload = runCatching {
-            when (parsed.type) {
-                LinkType.YOUTUBE_PLAYLIST -> youtubeRemoteDataSource.fetchPlaylist(parsed.id, parsed.normalizedUrl)
-                    ?: youtubeInnertubeDataSource.fetchPlaylist(parsed.id, parsed.normalizedUrl)
-                    ?: fallbackYouTubePlaylist(parsed.id, parsed.normalizedUrl)
-
-                LinkType.YOUTUBE_VIDEO -> youtubeRemoteDataSource.fetchVideo(parsed.id, parsed.normalizedUrl)
-                    ?: youtubeInnertubeDataSource.fetchVideo(parsed.id, parsed.normalizedUrl)
-                    ?: fallbackYouTubeVideo(parsed.id, parsed.normalizedUrl)
-
-                LinkType.SPOTIFY_PLAYLIST -> spotifyRemoteDataSource.fetchPlaylist(parsed.id, parsed.normalizedUrl)
-                    ?: fallbackSpotifyPlaylist(parsed.id, parsed.normalizedUrl)
-
-                LinkType.SPOTIFY_TRACK -> spotifyRemoteDataSource.fetchTrack(parsed.id, parsed.normalizedUrl)
-                    ?: fallbackSpotifyTrack(parsed.id, parsed.normalizedUrl)
-
-                LinkType.INVALID -> null
+        var parsed = linkParser.parse(url)
+        if (parsed.type == LinkType.SPOTIFY_SHORT_LINK) {
+            // spotify.link/...: se siguen las redirecciones para obtener la URL completa.
+            val resolved = try {
+                withTimeoutOrNull(SHORT_LINK_TIMEOUT_MS) { spotifyEmbedDataSource.resolveShortLink(parsed.normalizedUrl) }
+            } catch (cancelled: CancellationException) {
+                throw cancelled
+            } catch (ignored: Exception) {
+                null
             }
-        }.getOrElse {
+            parsed = resolved
+                ?.let { linkParser.parse(it) }
+                ?.takeIf { it.platform == Platform.SPOTIFY && it.type != LinkType.SPOTIFY_SHORT_LINK && it.type != LinkType.INVALID }
+                ?: return@withContext ImportResult.Error(
+                    "No se ha podido abrir ese enlace corto de Spotify. Copia el enlace completo de la playlist " +
+                        "(open.spotify.com/playlist/...) e inténtalo de nuevo."
+                )
+        }
+        val linkId = parsed.id
+        if (parsed.type == LinkType.INVALID || linkId.isNullOrBlank()) {
             return@withContext ImportResult.Error(
-                "No se ha podido importar la playlist ahora mismo. Revisa la conexion o la configuracion de APIs."
-            )
-        } ?: return@withContext ImportResult.Error("No se ha encontrado informacion util para ese enlace.")
-
-        if (payload.tracks.isEmpty()) {
-            return@withContext ImportResult.Error(
-                "No se han podido importar canciones de ese enlace. Comprueba que la playlist sea publica e intentalo de nuevo."
+                "No he podido reconocer ese enlace. Usa un enlace de playlist o canción de Spotify, " +
+                    "o de playlist o vídeo de YouTube."
             )
         }
 
-        val playlistId = persistRemotePlaylist(payload)
+        val isSpotify = parsed.platform == Platform.SPOTIFY
+
+        val fetched: RemotePlaylistPayload? = try {
+            withTimeoutOrNull(IMPORT_TIMEOUT_MS) { fetchPayload(parsed, linkId) }
+        } catch (cancelled: CancellationException) {
+            throw cancelled
+        } catch (error: Exception) {
+            return@withContext ImportResult.Error(describeImportFailure(error, isSpotify))
+        }
+        val payload = fetched ?: return@withContext ImportResult.Error(
+            "No se ha podido leer ese enlace. Comprueba que la playlist sea pública y que tengas conexión a internet."
+        )
+
+        val tracks = payload.tracks.take(MAX_IMPORTED_TRACKS)
+        if (tracks.isEmpty()) {
+            return@withContext ImportResult.Error(
+                "No se han podido importar canciones de ese enlace. Comprueba que la playlist sea pública e inténtalo de nuevo."
+            )
+        }
+
+        // La URL canonica (sin si=, sin music./m., etc.) es la clave para no duplicar importaciones.
+        val canonicalUrl = parsed.normalizedUrl
+        val alreadyImported = playlistDao.findByOriginalUrl(canonicalUrl) != null
+        val now = System.currentTimeMillis()
+        val playlistId = playlistDao.upsertImportedPlaylist(
+            playlist = PlaylistEntity(
+                title = payload.title.trim().ifBlank { parsed.type.label },
+                platform = payload.platform.name,
+                originalUrl = canonicalUrl,
+                imageUrl = payload.imageUrl,
+                createdAt = now,
+                updatedAt = now,
+                isLocal = false,
+                description = payload.description,
+            ),
+            tracks = tracks.map { it.toEntity() },
+        )
+
         ImportResult.Success(
             playlistId = playlistId,
-            message = if (payload.requiresApiConfiguration) {
-                "Playlist importada con metadatos limitados. Configura las APIs oficiales para mas detalle."
-            } else {
-                "Playlist importada: ${payload.tracks.size} pistas listas para reproducir."
-            },
+            message = buildSuccessMessage(parsed.type, tracks, alreadyImported, payload.requiresApiConfiguration),
             requiresApiConfiguration = payload.requiresApiConfiguration,
         )
+    }
+
+    private suspend fun fetchPayload(parsed: ParsedLink, id: String): RemotePlaylistPayload? {
+        val url = parsed.normalizedUrl
+        return when (parsed.type) {
+            LinkType.YOUTUBE_PLAYLIST -> {
+                val official = if (youtubeRemoteDataSource.isConfigured) {
+                    try {
+                        youtubeRemoteDataSource.fetchPlaylist(id, url)
+                    } catch (cancelled: CancellationException) {
+                        throw cancelled
+                    } catch (ignored: Exception) {
+                        null // cuota agotada / clave invalida: se prueba el metodo sin API key
+                    }
+                } else {
+                    null
+                }
+                official?.takeIf { it.tracks.isNotEmpty() } ?: youtubeInnertubeDataSource.fetchPlaylist(id, url)
+            }
+
+            LinkType.YOUTUBE_VIDEO -> {
+                val official = if (youtubeRemoteDataSource.isConfigured) {
+                    try {
+                        youtubeRemoteDataSource.fetchVideo(id, url)
+                    } catch (cancelled: CancellationException) {
+                        throw cancelled
+                    } catch (ignored: Exception) {
+                        null
+                    }
+                } else {
+                    null
+                }
+                official ?: youtubeInnertubeDataSource.fetchVideo(id, url)
+            }
+
+            LinkType.SPOTIFY_PLAYLIST,
+            LinkType.SPOTIFY_TRACK,
+            LinkType.SPOTIFY_ALBUM -> fetchSpotifyPayload(parsed.type, id, url)
+
+            // Los enlaces cortos se resuelven antes de llegar aqui.
+            LinkType.SPOTIFY_SHORT_LINK,
+            LinkType.INVALID -> null
+        }
+    }
+
+    /**
+     * Spotify: primero el proxy de metadatos (si esta configurado, es opcional) y, si no hay o
+     * falla, la pagina publica de embed, que no necesita configuracion.
+     */
+    private suspend fun fetchSpotifyPayload(type: LinkType, id: String, url: String): RemotePlaylistPayload? {
+        if (spotifyRemoteDataSource.isConfigured && type != LinkType.SPOTIFY_ALBUM) {
+            val viaProxy = try {
+                if (type == LinkType.SPOTIFY_TRACK) {
+                    spotifyRemoteDataSource.fetchTrack(id, url)
+                } else {
+                    spotifyRemoteDataSource.fetchPlaylist(id, url)
+                }
+            } catch (cancelled: CancellationException) {
+                throw cancelled
+            } catch (ignored: Exception) {
+                null // proxy caido o mal configurado: se usa el embed publico
+            }
+            if (viaProxy != null && viaProxy.tracks.isNotEmpty()) return viaProxy
+        }
+        return when (type) {
+            LinkType.SPOTIFY_TRACK -> spotifyEmbedDataSource.fetchTrack(id, url)
+            LinkType.SPOTIFY_ALBUM -> spotifyEmbedDataSource.fetchAlbum(id, url)
+            else -> spotifyEmbedDataSource.fetchPlaylist(id, url)
+        }
+    }
+
+    private fun buildSuccessMessage(
+        type: LinkType,
+        tracks: List<RemoteTrackPayload>,
+        alreadyImported: Boolean,
+        requiresApiConfiguration: Boolean,
+    ): String {
+        if (requiresApiConfiguration) {
+            return "Importado con metadatos limitados. Configura las APIs oficiales para obtener más detalle."
+        }
+        return when (type) {
+            LinkType.YOUTUBE_VIDEO -> "Vídeo importado."
+            LinkType.SPOTIFY_TRACK -> if (tracks.any { it.isPlayableInApp }) {
+                "Canción importada."
+            } else {
+                "Canción importada. No tiene preview reproducible: puedes abrirla en Spotify."
+            }
+
+            LinkType.SPOTIFY_ALBUM -> {
+                val verb = if (alreadyImported) "actualizado" else "importado"
+                "Álbum $verb: ${tracks.size} canciones."
+            }
+
+            else -> {
+                val verb = if (alreadyImported) "actualizada" else "importada"
+                val playable = tracks.count { it.isPlayableInApp }
+                when {
+                    playable == tracks.size -> "Playlist $verb: ${tracks.size} canciones listas para reproducir."
+                    playable == 0 -> "Playlist $verb: ${tracks.size} canciones. Ninguna se puede reproducir en la app; " +
+                        "puedes abrirlas en Spotify."
+
+                    else -> "Playlist $verb: ${tracks.size} canciones, $playable reproducibles en la app."
+                }
+            }
+        }
+    }
+
+    private fun describeImportFailure(error: Throwable, isSpotify: Boolean): String {
+        val source = if (isSpotify) "Spotify" else "YouTube"
+        return when (error) {
+            is SpotifyImportException -> error.message
+                ?: "No se ha podido leer la playlist de Spotify. Comprueba que es pública."
+
+            is HttpException -> when (error.code()) {
+                401, 403 -> "No se ha podido acceder a esa playlist: es privada o $source ha denegado el acceso."
+                404 -> "No se ha encontrado esa playlist. Comprueba el enlace y que sea pública."
+                429 -> "Demasiadas peticiones a $source. Inténtalo de nuevo en unos minutos."
+                else -> "$source ha devuelto un error (${error.code()}). Inténtalo de nuevo más tarde."
+            }
+
+            is IOException -> "No se ha podido conectar con $source. Revisa tu conexión a internet e inténtalo de nuevo."
+            is SerializationException -> "La respuesta de $source no tiene el formato esperado."
+            else -> "No se ha podido importar el enlace ahora mismo. Inténtalo de nuevo más tarde."
+        }
     }
 
     override suspend fun createLocalPlaylist(title: String): Long = withContext(Dispatchers.IO) {
         val normalizedTitle = title.trim().ifBlank { "Nueva playlist local" }
         playlistDao.findLocalByTitle(normalizedTitle)?.id ?: playlistDao.insert(
-            PlaylistEntity(
-                title = normalizedTitle,
-                platform = Platform.LOCAL.name,
-                originalUrl = "openfy://local/${normalizedTitle.lowercase().replace(' ', '-')}",
-                imageUrl = null,
-                createdAt = System.currentTimeMillis(),
-                updatedAt = System.currentTimeMillis(),
-                isLocal = true,
-                description = "Playlist local creada en Openfy.",
-            )
+            newLocalPlaylist(normalizedTitle, "Playlist local creada en Openfy.")
         )
     }
 
     override suspend fun importLocalTracks(playlistTitle: String, uris: List<Uri>): ImportResult = withContext(Dispatchers.IO) {
         if (uris.isEmpty()) return@withContext ImportResult.Error("No se han seleccionado archivos de audio.")
 
-        val normalizedTitle = playlistTitle.trim().ifBlank { "Coleccion local" }
-        val now = System.currentTimeMillis()
-        val existingPlaylist = playlistDao.findLocalByTitle(normalizedTitle)
-        val playlistId = existingPlaylist?.id ?: playlistDao.insert(
-            PlaylistEntity(
-                title = normalizedTitle,
-                platform = Platform.LOCAL.name,
-                originalUrl = "openfy://local/${normalizedTitle.lowercase().replace(' ', '-')}",
-                imageUrl = null,
-                createdAt = now,
-                updatedAt = now,
-                isLocal = true,
-                description = "Canciones locales importadas desde el dispositivo.",
-            )
-        )
-        val startPosition = trackDao.countByPlaylist(playlistId)
-        val tracks = uris.mapIndexedNotNull { index, uri ->
-            resolveLocalTrack(uri, playlistId, startPosition + index)
-        }
+        val normalizedTitle = playlistTitle.trim().ifBlank { "Colección local" }
+        val existingId = playlistDao.findLocalByTitle(normalizedTitle)?.id
+
+        // Lectura de metadatos en paralelo (de 4 en 4) para no tardar una eternidad con muchos archivos.
+        val tracks = uris.withIndex().toList().chunked(LOCAL_METADATA_PARALLELISM).flatMap { chunk ->
+            coroutineScope {
+                chunk.map { (index, uri) -> async { resolveLocalTrack(uri, index) } }.awaitAll()
+            }
+        }.filterNotNull()
+
         if (tracks.isEmpty()) {
             return@withContext ImportResult.Error("No se ha podido leer ninguno de los archivos seleccionados.")
         }
-        trackDao.insertAll(tracks)
-        playlistDao.touch(playlistId, System.currentTimeMillis())
+
+        val (playlistId, inserted) = playlistDao.appendLocalTracks(
+            existingPlaylistId = existingId,
+            newPlaylist = newLocalPlaylist(normalizedTitle, "Canciones locales importadas desde el dispositivo."),
+            tracks = tracks,
+        )
+        if (inserted == 0) {
+            return@withContext ImportResult.Error("Esos archivos ya estaban en la playlist \"$normalizedTitle\".")
+        }
         ImportResult.Success(
             playlistId = playlistId,
-            message = "Se han agregado ${tracks.size} archivos locales a \"$normalizedTitle\".",
+            message = if (inserted == 1) {
+                "Se ha añadido 1 archivo local a \"$normalizedTitle\"."
+            } else {
+                "Se han añadido $inserted archivos locales a \"$normalizedTitle\"."
+            },
         )
     }
 
@@ -166,13 +326,20 @@ class MusicRepositoryImpl(
 
     override suspend fun logPlayback(trackId: Long, progressMs: Long) {
         withContext(Dispatchers.IO) {
-            playbackHistoryDao.insert(
-                PlaybackHistoryEntity(
-                    trackId = trackId,
-                    playedAt = System.currentTimeMillis(),
-                    progressMs = progressMs,
+            // Si la pista se borro mientras sonaba, el insert violaria la FK: se ignora.
+            try {
+                playbackHistoryDao.insert(
+                    PlaybackHistoryEntity(
+                        trackId = trackId,
+                        playedAt = System.currentTimeMillis(),
+                        progressMs = progressMs,
+                    )
                 )
-            )
+                playbackHistoryDao.trimTo(MAX_HISTORY_ENTRIES)
+            } catch (cancelled: CancellationException) {
+                throw cancelled
+            } catch (ignored: Exception) {
+            }
         }
     }
 
@@ -188,12 +355,13 @@ class MusicRepositoryImpl(
         history: List<PlaybackHistoryEntity>,
     ) {
         withContext(Dispatchers.IO) {
-            playbackHistoryDao.deleteAll()
-            trackDao.deleteAll()
-            playlistDao.deleteAll()
-            playlists.forEach { playlistDao.insert(it) }
-            tracks.chunked(100).forEach { trackDao.insertAll(it) }
-            history.forEach { playbackHistoryDao.insert(it) }
+            // Se descartan referencias huerfanas (un backup editado a mano rompería las claves foráneas).
+            val playlistIds = playlists.mapTo(HashSet()) { it.id }
+            val validTracks = tracks.filter { it.playlistId in playlistIds }
+            val trackIds = validTracks.mapTo(HashSet()) { it.id }
+            val validHistory = history.filter { it.trackId in trackIds }
+            // Una sola transaccion: si falla algo, la biblioteca anterior se conserva intacta.
+            playlistDao.replaceAllData(playlists, validTracks, validHistory)
         }
     }
 
@@ -202,8 +370,8 @@ class MusicRepositoryImpl(
             if (playlistDao.count() > 0) return@withContext
 
             val now = System.currentTimeMillis()
-            val demoPlaylistId = playlistDao.insert(
-                PlaylistEntity(
+            playlistDao.insertPlaylistWithTracks(
+                playlist = PlaylistEntity(
                     title = "Openfy Demo Sessions",
                     platform = Platform.DEMO.name,
                     originalUrl = "openfy://demo/sessions",
@@ -211,14 +379,11 @@ class MusicRepositoryImpl(
                     createdAt = now,
                     updatedAt = now,
                     isLocal = true,
-                    description = "Melodia original incluida con Openfy para probar reproduccion en segundo plano y notificaciones.",
-                )
-            )
-
-            trackDao.insertAll(
-                listOf(
+                    description = "Melodía original incluida con Openfy para probar la reproducción en segundo plano y las notificaciones.",
+                ),
+                tracks = listOf(
                     TrackEntity(
-                        playlistId = demoPlaylistId,
+                        playlistId = 0,
                         title = "Openfy Demo Theme",
                         artist = "Openfy Studio",
                         album = "Openfy Originals",
@@ -232,143 +397,58 @@ class MusicRepositoryImpl(
                         isFavorite = false,
                         isPlayableInApp = true,
                     )
-                )
+                ),
             )
         }
     }
 
-    private suspend fun persistRemotePlaylist(payload: RemotePlaylistPayload): Long {
+    private fun newLocalPlaylist(title: String, description: String): PlaylistEntity {
         val now = System.currentTimeMillis()
-        val existing = playlistDao.findByOriginalUrl(payload.originalUrl)
-        val playlistId = if (existing != null) {
-            playlistDao.update(
-                existing.copy(
-                    title = payload.title,
-                    platform = payload.platform.name,
-                    imageUrl = payload.imageUrl,
-                    updatedAt = now,
-                    description = payload.description,
-                )
-            )
-            trackDao.deleteByPlaylist(existing.id)
-            existing.id
-        } else {
-            playlistDao.insert(
-                PlaylistEntity(
-                    title = payload.title,
-                    platform = payload.platform.name,
-                    originalUrl = payload.originalUrl,
-                    imageUrl = payload.imageUrl,
-                    createdAt = now,
-                    updatedAt = now,
-                    isLocal = payload.platform == Platform.LOCAL || payload.platform == Platform.DEMO,
-                    description = payload.description,
-                )
-            )
-        }
-
-        trackDao.insertAll(
-            payload.tracks.mapIndexed { index, track ->
-                TrackEntity(
-                    playlistId = playlistId,
-                    title = track.title,
-                    artist = track.artist,
-                    album = track.album,
-                    durationMs = track.durationMs,
-                    imageUrl = track.imageUrl,
-                    originalUrl = track.originalUrl,
-                    localUri = track.localUri,
-                    previewUrl = track.previewUrl,
-                    platform = track.platform.name,
-                    position = index,
-                    isFavorite = track.isFavorite,
-                    isPlayableInApp = track.isPlayableInApp,
-                )
-            }
+        return PlaylistEntity(
+            title = title,
+            platform = Platform.LOCAL.name,
+            originalUrl = "openfy://local/${title.lowercase().replace(' ', '-')}",
+            imageUrl = null,
+            createdAt = now,
+            updatedAt = now,
+            isLocal = true,
+            description = description,
         )
-        return playlistId
     }
 
-    private fun fallbackYouTubePlaylist(playlistId: String, url: String) = RemotePlaylistPayload(
-        title = "Playlist de YouTube",
-        platform = Platform.YOUTUBE,
-        originalUrl = url,
-        imageUrl = null,
-        description = "Configura OPENFY_YOUTUBE_API_KEY en local.properties para importar titulos y canciones de la playlist.",
-        tracks = emptyList(),
-        requiresApiConfiguration = true,
+    private fun RemoteTrackPayload.toEntity() = TrackEntity(
+        playlistId = 0, // lo fija el DAO al insertar
+        title = title.trim().ifBlank { "Sin título" },
+        artist = artist.trim().ifBlank { "Desconocido" },
+        album = album,
+        durationMs = durationMs,
+        imageUrl = imageUrl,
+        originalUrl = originalUrl,
+        localUri = localUri,
+        previewUrl = previewUrl,
+        platform = platform.name,
+        position = 0, // lo fija el DAO al insertar
+        isFavorite = isFavorite,
+        isPlayableInApp = isPlayableInApp,
     )
 
-    private fun fallbackYouTubeVideo(videoId: String, url: String) = RemotePlaylistPayload(
-        title = "Video de YouTube",
-        platform = Platform.YOUTUBE,
-        originalUrl = url,
-        imageUrl = "https://i.ytimg.com/vi/$videoId/hqdefault.jpg",
-        description = "Referencia de YouTube importada en Openfy.",
-        tracks = listOf(
-            RemoteTrackPayload(
-                title = "Video de YouTube",
-                artist = "YouTube",
-                album = null,
-                durationMs = null,
-                imageUrl = "https://i.ytimg.com/vi/$videoId/hqdefault.jpg",
-                originalUrl = url,
-                platform = Platform.YOUTUBE,
-                isPlayableInApp = true,
-            )
-        ),
-        requiresApiConfiguration = true,
-    )
-
-    private fun fallbackSpotifyPlaylist(playlistId: String, url: String) = RemotePlaylistPayload(
-        title = "Playlist de Spotify",
-        platform = Platform.SPOTIFY,
-        originalUrl = url,
-        imageUrl = null,
-        description = "Para importar metadatos completos de Spotify configura OPENFY_SPOTIFY_METADATA_BASE_URL apuntando a un backend seguro.",
-        tracks = emptyList(),
-        requiresApiConfiguration = true,
-    )
-
-    private fun fallbackSpotifyTrack(trackId: String, url: String) = RemotePlaylistPayload(
-        title = "Cancion de Spotify",
-        platform = Platform.SPOTIFY,
-        originalUrl = url,
-        imageUrl = null,
-        description = "Referencia externa de Spotify. Si existe preview oficial podras reproducirla cuando tu proxy la proporcione.",
-        tracks = listOf(
-            RemoteTrackPayload(
-                title = "Cancion de Spotify",
-                artist = "Spotify",
-                album = null,
-                durationMs = null,
-                imageUrl = null,
-                originalUrl = url,
-                platform = Platform.SPOTIFY,
-                isPlayableInApp = false,
-            )
-        ),
-        requiresApiConfiguration = true,
-    )
-
-    private fun resolveLocalTrack(uri: Uri, playlistId: Long, position: Int): TrackEntity? {
-        return runCatching {
-            if (appContext.contentResolver.openInputStream(uri) == null) {
-                throw FileNotFoundException(uri.toString())
-            }
+    /** Lee los metadatos de un archivo de audio local. Devuelve null si no se puede leer. */
+    private fun resolveLocalTrack(uri: Uri, index: Int): TrackEntity? {
+        val retriever = MediaMetadataRetriever()
+        return try {
             val documentFile = DocumentFile.fromSingleUri(appContext, uri)
-            val retriever = MediaMetadataRetriever()
             retriever.setDataSource(appContext, uri)
             val rawTitle = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_TITLE)
             val rawArtist = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ARTIST)
             val rawAlbum = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ALBUM)
             val rawDuration = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)?.toLongOrNull()
-            retriever.release()
 
             TrackEntity(
-                playlistId = playlistId,
-                title = rawTitle ?: documentFile?.name?.substringBeforeLast('.') ?: "Audio local ${position + 1}",
-                artist = rawArtist ?: "Archivo local",
+                playlistId = 0, // lo fija el DAO al insertar
+                title = rawTitle?.takeIf { it.isNotBlank() }
+                    ?: documentFile?.name?.substringBeforeLast('.')?.takeIf { it.isNotBlank() }
+                    ?: "Audio local ${index + 1}",
+                artist = rawArtist?.takeIf { it.isNotBlank() } ?: "Archivo local",
                 album = rawAlbum,
                 durationMs = rawDuration,
                 imageUrl = null,
@@ -376,11 +456,23 @@ class MusicRepositoryImpl(
                 localUri = uri.toString(),
                 previewUrl = null,
                 platform = Platform.LOCAL.name,
-                position = position,
+                position = 0, // lo fija el DAO al insertar
                 isFavorite = false,
                 isPlayableInApp = true,
             )
-        }.getOrNull()
+        } catch (ignored: Exception) {
+            null
+        } finally {
+            runCatching { retriever.release() }
+        }
+    }
+
+    private companion object {
+        const val IMPORT_TIMEOUT_MS = 120_000L
+        const val MAX_IMPORTED_TRACKS = 5_000
+        const val MAX_HISTORY_ENTRIES = 500
+        const val LOCAL_METADATA_PARALLELISM = 4
+        const val SHORT_LINK_TIMEOUT_MS = 20_000L
     }
 }
 

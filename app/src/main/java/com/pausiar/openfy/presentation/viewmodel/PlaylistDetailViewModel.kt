@@ -10,10 +10,14 @@ import com.pausiar.openfy.domain.models.TrackFilter
 import com.pausiar.openfy.domain.models.TrackSort
 import com.pausiar.openfy.domain.usecases.ObservePlaylistDetailUseCase
 import com.pausiar.openfy.player.controller.PlayerConnection
+import com.pausiar.openfy.utils.normalizeForSearch
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -46,10 +50,20 @@ class PlaylistDetailViewModel(
             tracks = playlist?.tracks.orEmpty().applyFilter(activeFilter),
             message = info,
         )
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), PlaylistDetailUiState())
+    }
+        .flowOn(Dispatchers.Default) // filtrado y orden de playlists grandes fuera del hilo principal
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), PlaylistDetailUiState())
 
     init {
-        viewModelScope.launch { settingsRepository.setLastPlaylistId(playlistId) }
+        viewModelScope.launch {
+            try {
+                settingsRepository.setLastPlaylistId(playlistId)
+            } catch (cancelled: CancellationException) {
+                throw cancelled
+            } catch (ignored: Exception) {
+                // Recordar la ultima playlist es opcional.
+            }
+        }
         viewModelScope.launch {
             playerConnection.uiState.collect { playerState ->
                 playerState.errorMessage?.let { info ->
@@ -74,25 +88,48 @@ class PlaylistDetailViewModel(
 
     fun playAll(shuffle: Boolean) {
         val playlist = uiState.value.playlist ?: return
-        val tracks = uiState.value.tracks.ifEmpty { playlist.tracks }
-        if (tracks.isEmpty()) {
+        if (playlist.tracks.isEmpty()) {
             message.value = "Esta playlist no tiene pistas importadas."
+            return
+        }
+        val tracks = uiState.value.tracks
+        if (tracks.isEmpty()) {
+            message.value = "Ninguna pista coincide con el filtro actual."
+            return
+        }
+        if (tracks.none { it.canPlayInApp }) {
+            message.value = "Ninguna pista de esta playlist se puede reproducir en la app. " +
+                "Puedes abrirlas en su plataforma de origen."
             return
         }
         playerConnection.playTracks(tracks, shuffled = shuffle)
     }
 
     fun playTrack(track: Track) {
-        val tracks = uiState.value.tracks
-        if (!track.isPlayableInApp) {
+        if (!track.canPlayInApp) {
             message.value = "Esta pista solo puede abrirse en la app externa oficial."
             return
         }
-        playerConnection.playTracks(tracks, tracks.indexOfFirst { it.id == track.id }.coerceAtLeast(0))
+        val tracks = uiState.value.tracks
+        val startIndex = tracks.indexOfFirst { it.id == track.id }
+        if (startIndex < 0) {
+            // La lista cambió (filtro u orden) justo antes del toque: se reproduce solo esa pista.
+            playerConnection.playTracks(listOf(track), 0)
+            return
+        }
+        playerConnection.playTracks(tracks, startIndex)
     }
 
     fun toggleFavorite(trackId: Long) {
-        viewModelScope.launch { musicRepository.toggleFavorite(trackId) }
+        viewModelScope.launch {
+            try {
+                musicRepository.toggleFavorite(trackId)
+            } catch (cancelled: CancellationException) {
+                throw cancelled
+            } catch (error: Exception) {
+                message.value = "No se ha podido actualizar el favorito."
+            }
+        }
     }
 
     fun clearMessage() {
@@ -101,17 +138,22 @@ class PlaylistDetailViewModel(
 }
 
 private fun List<Track>.applyFilter(filter: TrackFilter): List<Track> {
-    val filtered = filter { track ->
-        val matchesQuery = filter.query.isBlank() ||
-            track.title.contains(filter.query.trim(), ignoreCase = true) ||
-            track.artist.contains(filter.query.trim(), ignoreCase = true)
-        val matchesFavorite = !filter.favoritesOnly || track.isFavorite
-        matchesQuery && matchesFavorite
+    val query = filter.query.trim().normalizeForSearch()
+    val filtered = if (query.isEmpty() && !filter.favoritesOnly) {
+        this
+    } else {
+        filter { track ->
+            val matchesQuery = query.isEmpty() ||
+                track.title.normalizeForSearch().contains(query) ||
+                track.artist.normalizeForSearch().contains(query)
+            val matchesFavorite = !filter.favoritesOnly || track.isFavorite
+            matchesQuery && matchesFavorite
+        }
     }
 
     return when (filter.sort) {
         TrackSort.POSITION -> filtered.sortedBy { it.position }
-        TrackSort.TITLE -> filtered.sortedBy { it.title.lowercase() }
+        TrackSort.TITLE -> filtered.sortedWith(compareBy(String.CASE_INSENSITIVE_ORDER) { it.title })
         TrackSort.DURATION -> filtered.sortedByDescending { it.durationMs ?: 0L }
     }
 }
