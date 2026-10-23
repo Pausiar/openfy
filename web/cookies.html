@@ -1,95 +1,128 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" data-theme="dark">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Política de Cookies — Openfy">
-  <title>Política de Cookies — Openfy</title>
+  <meta name="description" content="Política de cookies de Openfy: este sitio no utiliza cookies ni servicios de terceros; solo guarda la preferencia de tema en el almacenamiento local del navegador.">
+  <meta name="theme-color" content="#0b0a0f">
+  <link rel="canonical" href="https://pausiar.github.io/openfy/cookies.html">
+  <meta name="robots" content="index, follow">
+  <title>Política de cookies — Openfy</title>
   <link rel="icon" type="image/png" href="assets/logo.png">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,300;12..96,400;12..96,600;12..96,700;12..96,800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
-  <style>
-    .legal-container {
-      max-width: 800px;
-      margin: 80px auto;
-      padding: 40px 24px;
-      background: var(--bg-2);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-lg);
-      box-shadow: 0 20px 40px rgba(0,0,0,0.3);
-    }
-    .legal-container h1 {
-      font-size: 2.5rem;
-      margin-bottom: 24px;
-      letter-spacing: -0.03em;
-    }
-    .legal-container h2 {
-      font-size: 1.5rem;
-      margin-top: 32px;
-      margin-bottom: 16px;
-      letter-spacing: -0.02em;
-    }
-    .legal-container p {
-      color: var(--muted);
-      margin-bottom: 16px;
-      line-height: 1.7;
-    }
-    .legal-container ul {
-      margin-left: 20px;
-      margin-bottom: 16px;
-      color: var(--muted);
-    }
-    .legal-container li {
-      margin-bottom: 8px;
-    }
-    .back-home {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      color: var(--accent);
-      text-decoration: none;
-      font-weight: 600;
-      margin-bottom: 32px;
-      transition: opacity 0.2s;
-    }
-    .back-home:hover {
-      opacity: 0.8;
-    }
-  </style>
+  <script src="site-config.js"></script>
+  <script src="app.js" defer></script>
 </head>
 <body>
 
-  <div class="bg-grid"></div>
-  <div class="bg-glow bg-glow-1"></div>
-  <div class="bg-glow bg-glow-2"></div>
+  <div class="bg-grid" aria-hidden="true"></div>
+  <div class="bg-glow" aria-hidden="true"></div>
 
-  <main class="legal-container">
+  <nav class="nav" aria-label="Navegación">
+    <div class="container nav-inner">
+      <a class="nav-logo" href="index.html">
+        <img src="assets/logo.png" alt="Logotipo de Openfy" class="nav-icon" width="30" height="30">
+        <span>Openfy</span>
+      </a>
+      <div class="nav-links">
+        <button class="theme-toggle" id="theme-toggle" type="button" aria-label="Cambiar entre tema oscuro y claro" title="Cambiar tema">
+          <svg class="icon-moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+          <svg class="icon-sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+        </button>
+        <a href="index.html">Volver al inicio</a>
+      </div>
+    </div>
+  </nav>
+
+  <main class="doc">
     <a href="index.html" class="back-home">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
       Volver al inicio
     </a>
 
-    <h1>Política de Cookies</h1>
-    <p>En cumplimiento de lo establecido en el artículo 22.2 de la Ley 34/2002, de 11 de julio, de Servicios de la Sociedad de la Información y de Comercio Electrónico (LSSI-CE), y siguiendo las directrices de la Agencia Española de Protección de Datos (AEPD), le informamos sobre el uso de cookies en este sitio web.</p>
+    <header class="doc-header">
+      <h1>Política de cookies</h1>
+      <p>
+        En cumplimiento del artículo 22.2 de la Ley 34/2002, de 11 de julio, de Servicios de la
+        Sociedad de la Información y de Comercio Electrónico (LSSI-CE), y siguiendo las directrices
+        de la Agencia Española de Protección de Datos, te informamos sobre el uso de cookies y
+        tecnologías similares en este sitio web.
+      </p>
+      <p class="doc-updated">Última actualización: 23 de octubre de 2026</p>
+    </header>
 
-    <h2>1. ¿Qué son las Cookies?</h2>
-    <p>Las cookies son pequeños archivos de texto que se descargan y almacenan en el navegador de su ordenador, teléfono móvil o tableta al acceder a determinadas páginas web. Permiten a una página web, entre otras cosas, almacenar y recuperar información sobre los hábitos de navegación de un usuario o de su equipo y, dependiendo de la información que contengan y de la forma en que utilice su equipo, pueden utilizarse para reconocer al usuario.</p>
+    <h2>1. ¿Qué son las cookies?</h2>
+    <p>
+      Las cookies son pequeños archivos que el navegador guarda en tu dispositivo al visitar una
+      web. Permiten, entre otras cosas, recordar información entre páginas o saber cómo navega
+      el visitante. Las tecnologías similares (por ejemplo, <code>localStorage</code> o
+      <code>sessionStorage</code>) cumplen la misma función, aunque no son cookies en sentido
+      estricto, y por eso también se detallan aquí.
+    </p>
 
-    <h2>2. Uso de Cookies en este Sitio Web</h2>
-    <p>Este sitio web es <strong>100% libre de cookies</strong>. No utilizamos cookies de ningún tipo, ni propias ni de terceros, para:</p>
+    <h2>2. Cookies en este sitio web</h2>
+    <p>
+      Este sitio web <strong>no utiliza cookies</strong>. Ni propias ni de terceros, ni con fines
+      analíticos, publicitarios o de seguimiento. Concretamente, el sitio no:
+    </p>
     <ul>
-      <li>Rastrear o analizar su navegación.</li>
-      <li>Mostrar publicidad personalizada.</li>
-      <li>Almacenar preferencias de sesión.</li>
-      <li>Cualquier otra finalidad comercial o técnica.</li>
+      <li>Rastrea ni analiza tu navegación.</li>
+      <li>Muestra publicidad personalizada.</li>
+      <li>Almacena preferencias de sesión identificables.</li>
+      <li>Carga recursos desde servidores de terceros (tipografías, scripts, píxeles o mapas).</li>
     </ul>
-    <p>Al no utilizar ningún tipo de cookie ni recopilar datos, este sitio web no requiere mostrar el habitual banner de consentimiento o aceptación de cookies, garantizando una navegación completamente limpia, rápida y privada desde el primer segundo.</p>
+    <p>
+      Al no existir cookies ni herramientas de seguimiento, este sitio <strong>no necesita mostrar
+      un banner de consentimiento</strong>. Puedes navegar con total libertad sin que se instale
+      ningún identificador en tu equipo.
+    </p>
 
-    <h2>3. Cookies en la Aplicación Móvil</h2>
-    <p>La aplicación móvil Openfy tampoco utiliza cookies ni tecnologías de seguimiento equivalentes. Toda la configuración y los datos de biblioteca se almacenan de forma local en el almacenamiento interno del dispositivo (Room y DataStore) y nunca se comparten con terceros.</p>
+    <h2>3. Almacenamiento local utilizado</h2>
+    <p>
+      El único dato que este sitio guarda en tu navegador es tu <strong>preferencia de tema</strong>
+      (claro u oscuro), mediante <code>localStorage</code>. Se trata de un dato técnico que no te
+      identifica, que no se transmite a ningún servidor y que puedes eliminar en cualquier momento
+      borrando los datos del sitio desde los ajustes de tu navegador.
+    </p>
+
+    <h2>4. Cookies en la aplicación Android</h2>
+    <p>
+      La aplicación Openfy tampoco utiliza cookies ni tecnologías de seguimiento equivalentes. Toda
+      la configuración y los datos de la biblioteca se almacenan localmente en el almacenamiento
+      interno del dispositivo (Room y DataStore) y nunca se comparten con el titular del proyecto
+      ni con terceros.
+    </p>
+
+    <h2>5. Cómo revisar o eliminar el almacenamiento local</h2>
+    <p>
+      Puedes borrar el almacenamiento de este sitio en cualquier momento:
+    </p>
+    <ul>
+      <li><strong>Chrome / Edge:</strong> candado o icono de información en la barra de direcciones → «Cookies y datos de sitios» → «Administrar datos de sitios» → eliminar.</li>
+      <li><strong>Firefox:</strong> menú → «Privacidad y seguridad» → «Ver cookies y datos de sitios» → «Borrar datos».</li>
+      <li><strong>Safari:</strong> «Ajustes» → «Privacidad» → «Administrar datos de sitios web».</li>
+    </ul>
+
+    <h2>6. Cambios en esta política</h2>
+    <p>
+      Si en el futuro este sitio incorporate cookies o servicios de terceros, esta política se
+      actualizará antes de su entrada en vigor y, cuando sea legalmente exigible, se mostrará un
+      banner de consentimiento para que puedas aceptarlas de forma expresa.
+    </p>
   </main>
+
+  <footer class="footer">
+    <div class="container footer-inner">
+      <nav class="footer-legal" aria-label="Información legal">
+        <a href="legal.html">Aviso legal</a>
+        <a href="privacidad.html">Política de privacidad</a>
+        <a href="cookies.html">Política de cookies</a>
+        <a href="terminos.html">Condiciones de uso</a>
+        <a href="licencias.html">Licencias de terceros</a>
+      </nav>
+      <p class="footer-updated">Openfy · <a href="https://github.com/Pausiar/openfy" target="_blank" rel="noopener noreferrer">github.com/Pausiar/openfy</a></p>
+    </div>
+  </footer>
 
 </body>
 </html>

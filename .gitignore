@@ -8,5 +8,10 @@ captures/
 # Signing and local secrets
 *.jks
 *.keystore
+*.p12
 keystore.properties
 .env
+# Release artifacts served from GitHub Pages (they are published by CI, not committed)
+web/downloads/*.apk
+web/downloads/*.sha256
+web/downloads/SHA256SUMS.txt

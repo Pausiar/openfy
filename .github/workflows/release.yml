@@ -7,12 +7,20 @@ on:
   workflow_dispatch:
     inputs:
       tag:
-        description: 'Release tag to publish, e.g. v0.2.2'
+        description: 'Release tag to publish, e.g. v0.2.3'
         required: true
-        default: 'v0.2.2'
+        default: 'v0.2.3'
 
 permissions:
   contents: write
+  pages: write
+  id-token: write
+
+# Comparte grupo con el workflow de Pages: las publicaciones se serializan y
+# nunca se pisan entre sí.
+concurrency:
+  group: pages
+  cancel-in-progress: false
 
 jobs:
   release:
@@ -28,20 +36,34 @@ jobs:
           java-version: '17'
           cache: gradle
 
-      - name: Decode release keystore (if configured)
+      - name: Check version matches tag
+        env:
+          RELEASE_TAG: ${{ github.event.inputs.tag || github.ref_name }}
+        run: |
+          set -euo pipefail
+          VERSION_NAME=$(sed -n 's/^versionName=//p' version.properties | head -n 1 | tr -d '\r')
+          echo "version.properties: $VERSION_NAME"
+          echo "tag:                 $RELEASE_TAG"
+          if [ "$RELEASE_TAG" != "v$VERSION_NAME" ]; then
+            echo "::error::El tag $RELEASE_TAG no coincide con versionName=$VERSION_NAME. Actualiza version.properties antes de publicar."
+            exit 1
+          fi
+
+      - name: Decode release keystore
         env:
           OPENFY_KEYSTORE_BASE64: ${{ secrets.OPENFY_KEYSTORE_BASE64 }}
           OPENFY_KEYSTORE_PASSWORD: ${{ secrets.OPENFY_KEYSTORE_PASSWORD }}
           OPENFY_KEY_ALIAS: ${{ secrets.OPENFY_KEY_ALIAS }}
           OPENFY_KEY_PASSWORD: ${{ secrets.OPENFY_KEY_PASSWORD }}
         run: |
-          if [ -n "$OPENFY_KEYSTORE_BASE64" ] && [ -n "$OPENFY_KEYSTORE_PASSWORD" ] && [ -n "$OPENFY_KEY_ALIAS" ] && [ -n "$OPENFY_KEY_PASSWORD" ]; then
-            mkdir -p "$RUNNER_TEMP/openfy-signing"
-            echo "$OPENFY_KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/openfy-signing/openfy-release.jks"
-            echo "OPENFY_KEYSTORE_PATH=$RUNNER_TEMP/openfy-signing/openfy-release.jks" >> "$GITHUB_ENV"
-          else
-            echo "::warning::Release signing secrets not configured; the APK will be signed with a debug key."
+          set -euo pipefail
+          if [ -z "$OPENFY_KEYSTORE_BASE64" ] || [ -z "$OPENFY_KEYSTORE_PASSWORD" ] || [ -z "$OPENFY_KEY_ALIAS" ] || [ -z "$OPENFY_KEY_PASSWORD" ]; then
+            echo "::error::Faltan los secrets de firma release (OPENFY_KEYSTORE_BASE64, OPENFY_KEYSTORE_PASSWORD, OPENFY_KEY_ALIAS, OPENFY_KEY_PASSWORD). No se publica ninguna APK sin la clave oficial: una APK firmada con la clave debug no se puede actualizar en el dispositivo."
+            exit 1
           fi
+          mkdir -p "$RUNNER_TEMP/openfy-signing"
+          echo "$OPENFY_KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/openfy-signing/openfy-release.p12"
+          echo "OPENFY_KEYSTORE_PATH=$RUNNER_TEMP/openfy-signing/openfy-release.p12" >> "$GITHUB_ENV"
 
       - name: Build release APK
         env:
@@ -51,28 +73,120 @@ jobs:
         run: ./gradlew clean :app:assembleRelease
 
       - name: Verify APK signature
-        run: $(ls -d $ANDROID_HOME/build-tools/* | sort -V | tail -n 1)/apksigner verify --verbose app/build/outputs/apk/release/app-release.apk
+        id: verify
+        run: |
+          set -euo pipefail
+          APK=app/build/outputs/apk/release/app-release.apk
+          APKSIGNER=$(ls -d "$ANDROID_HOME"/build-tools/* | sort -V | tail -n 1)/apksigner
+          "$APKSIGNER" verify --verbose --print-certs "$APK" | tee signature-report.txt
+
+          echo "--- esquemas de firma usados ---"
+          "$APKSIGNER" verify --verbose "$APK" | grep -E 'Verified using v[0-9]' || true
+
+          # La huella debe coincidir con la publicada en signing/release-certificate.txt.
+          EXPECTED=$(grep -i '^sha-256:' signing/release-certificate.txt | head -n 1 | cut -d: -f2- | tr -d ' \r' | tr '[:lower:]' '[:upper:]')
+          ACTUAL=$("$APKSIGNER" verify --print-certs "$APK" | grep -i 'SHA-256 digest' | head -n 1 | awk '{print $NF}' | tr '[:lower:]' '[:upper:]')
+          echo "Esperada: $EXPECTED"
+          echo "Obtenida: $ACTUAL"
+          if [ "$EXPECTED" != "$ACTUAL" ]; then
+            echo "::error::La APK está firmada con un certificado distinto al publicado en signing/release-certificate.txt. Revisa la clave de release antes de publicar."
+            exit 1
+          fi
+          echo "Firma verificada: $ACTUAL"
 
       - name: Prepare release assets
+        id: assets
+        env:
+          RELEASE_TAG: ${{ github.event.inputs.tag || github.ref_name }}
         run: |
-          VERSION_NAME=$(sed -n 's/.*versionName = "\([^"]*\)".*/\1/p' app/build.gradle.kts | head -n 1)
-          if [ -z "$VERSION_NAME" ]; then VERSION_NAME="${GITHUB_REF_NAME#v}"; fi
-          cp app/build/outputs/apk/release/app-release.apk "openfy-v${VERSION_NAME}.apk"
-          cp app/build/outputs/apk/release/app-release.apk openfy-latest.apk
+          set -euo pipefail
+          VERSION_NAME=$(sed -n 's/^versionName=//p' version.properties | head -n 1 | tr -d '\r')
+          APK=app/build/outputs/apk/release/app-release.apk
+          cp "$APK" "openfy-v${VERSION_NAME}.apk"
+          cp "$APK" openfy-latest.apk
+          sha256sum openfy-v"${VERSION_NAME}".apk openfy-latest.apk > SHA256SUMS.txt
+          cat SHA256SUMS.txt
+          echo "version=${VERSION_NAME}" >> "$GITHUB_OUTPUT"
 
       - name: Create GitHub Release
+        id: release
+        env:
+          RELEASE_TAG: ${{ github.event.inputs.tag || github.ref_name }}
+          VERSION: ${{ steps.assets.outputs.version }}
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ github.event.inputs.tag || github.ref_name }}
           target_commitish: ${{ github.sha }}
           name: Openfy ${{ github.event.inputs.tag || github.ref_name }}
           body: |
-            Openfy 0.2.2: reproducción más rápida y nueva interfaz.
+            Openfy ${{ steps.assets.outputs.version }}.
 
+            - Importación de playlists, álbumes y enlaces cortos de Spotify sin proxy externo.
             - Reproducción más rápida: resolución de streams bajo demanda y precarga de la siguiente canción.
-            - Rediseño completo de la interfaz.
-            - Correcciones de errores y mejoras de rendimiento.
-            - APK release firmada y verificada con apksigner en CI.
+            - Rediseño completo de la interfaz y del sitio web.
+            - APK firmada con la clave de release oficial (v2 + v3) y verificada con apksigner en CI.
+
+            ### Verificación
+
+            ```bash
+            sha256sum -c SHA256SUMS.txt
+            apksigner verify --print-certs openfy-latest.apk
+            ```
+
+            La huella SHA-256 del certificado de firma también está publicada en
+            https://pausiar.github.io/openfy/ y dentro de la app
+            (Ajustes → Información legal).
           files: |
             openfy-v*.apk
             openfy-latest.apk
+            SHA256SUMS.txt
+
+      - name: Summary
+        env:
+          VERSION: ${{ steps.assets.outputs.version }}
+        run: |
+          echo "### Release ${{ steps.assets.outputs.version }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "- APK: \`openfy-latest.apk\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Firma verificada con apksigner (certificado coincide con signing/release-certificate.txt)" >> "$GITHUB_STEP_SUMMARY"
+
+  pages:
+    needs: release
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Checkout site
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          path: site
+
+      - name: Download release assets
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ github.event.inputs.tag || github.ref_name }}
+        run: |
+          set -euo pipefail
+          cd site
+          mkdir -p web/downloads
+          gh release download "$RELEASE_TAG" --pattern 'openfy-latest.apk' --dir web/downloads --clobber
+          gh release download "$RELEASE_TAG" --pattern 'SHA256SUMS.txt' --dir web/downloads --clobber
+          sha256sum web/downloads/openfy-latest.apk | awk '{print $1}' > web/downloads/openfy-latest.apk.sha256
+          ls -la web/downloads
+
+      - name: Generate download manifest
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ github.event.inputs.tag || github.ref_name }}
+        working-directory: site
+        run: node scripts/generate-release-manifest.mjs --tag "$RELEASE_TAG"
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: site/web
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

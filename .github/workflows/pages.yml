@@ -10,6 +10,8 @@ permissions:
   pages: write
   id-token: write
 
+# Mismo grupo que el workflow de release: las publicaciones de Pages se
+# serializan para que una no pise a la otra.
 concurrency:
   group: pages
   cancel-in-progress: false
@@ -23,6 +25,48 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Resolve latest release
+        id: latest
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          TAG=$(gh api "repos/${GITHUB_REPOSITORY}/releases/latest" --jq '.tag_name' 2>/dev/null || echo "")
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          if [ -z "$TAG" ]; then
+            echo "::warning::No hay ninguna release publicada todavía; se despliega el sitio con el manifiesto de respaldo."
+          else
+            echo "Release más reciente: $TAG"
+          fi
+
+      - name: Download release assets
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ steps.latest.outputs.tag }}
+        run: |
+          set -euo pipefail
+          if [ -z "$RELEASE_TAG" ]; then
+            echo "Sin release: no hay APK que publicar."
+            exit 0
+          fi
+          mkdir -p web/downloads
+          gh release download "$RELEASE_TAG" --pattern 'openfy-latest.apk' --dir web/downloads --clobber
+          gh release download "$RELEASE_TAG" --pattern 'SHA256SUMS.txt' --dir web/downloads --clobber
+          sha256sum web/downloads/openfy-latest.apk | awk '{print $1}' > web/downloads/openfy-latest.apk.sha256
+          ls -la web/downloads
+
+      - name: Generate download manifest
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ steps.latest.outputs.tag }}
+        run: |
+          set -euo pipefail
+          if [ -z "$RELEASE_TAG" ]; then
+            echo "Sin release: se mantiene el manifiesto versionado."
+            exit 0
+          fi
+          node scripts/generate-release-manifest.mjs --tag "$RELEASE_TAG"
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3

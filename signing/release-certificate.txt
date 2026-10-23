@@ -1,0 +1,23 @@
+# Certificado de firma release de Openfy
+#
+# Huella pública del certificado con el que se firma la APK oficial.
+# No es un secreto: se publica en la web para que cualquiera pueda comprobar
+# que el APK que descarga es el de verdad.
+#
+# El CI (.github/workflows/release.yml) extrae la huella de la APK recién
+# compilada y falla la release si no coincide con este fichero. Es la red de
+# seguridad contra publicar una APK firmada con otra clave.
+#
+# Huella SHA-256 (la que se muestra en la web y en "Ajustes → Información legal"):
+#   78:B4:EC:CA:E9:6D:C9:74:28:87:7A:18:E7:E4:AD:1C:E4:7B:85:C0:BD:C0:CB:67:56:0D:B7:07:3E:A2:7A:64
+#
+# Verificación manual:
+#   apksigner verify --print-certs openfy-latest.apk
+#   keytool -printcert -jarfile openfy-latest.apk
+
+subject: CN=Openfy, O=Pausiar, C=ES
+sha-256: 78:B4:EC:CA:E9:6D:C9:74:28:87:7A:18:E7:E4:AD:1C:E4:7B:85:C0:BD:C0:CB:67:56:0D:B7:07:3E:A2:7A:64
+sha-1: 6A:41:7F:D4:C4:43:50:05:63:16:C1:79:15:D0:66:6B:4C:36:53:35
+key-algorithm: RSA
+key-size: 4096
+signature-algorithm: SHA256withRSA
