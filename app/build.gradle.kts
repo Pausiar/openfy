@@ -127,9 +127,10 @@ android {
 /**
  * Falla la build de release si no hay credenciales de firma release.
  *
- * Se comprueba al construir el grafo de tareas (y no al configurar el proyecto) para
- * que las builds de debug sigan funcionando sin secretos, y para que el error salte
- * con un mensaje accionable en lugar del error genérico de AGP ("keystore not found").
+ * La comprobación se hace al configurar el proyecto, en función de las tareas
+ * pedidas en la línea de comandos, para que las builds de debug sigan
+ * funcionando sin secretos y el error salte con un mensaje accionable en lugar
+ * del error genérico de AGP ("keystore not found").
  */
 val releaseSigningError = """
     |Falta la configuración de firma release de Openfy.
@@ -148,12 +149,28 @@ val releaseSigningError = """
     |actualizar en el dispositivo y Android mostraría avisos de aplicación no verificada.
 """.trimMargin()
 
-gradle.taskGraph.whenReady { graph ->
-    val buildsRelease = graph.allTasks.any { task ->
-        task.project == project && task.name.matches(Regex("^(assemble|package|sign|bundle)Release.*"))
-    }
-    if (buildsRelease && !hasReleaseSigning()) {
-        throw GradleException(releaseSigningError)
+/**
+ * `build` y `assemble` incluyen las variantes de release, así que también cuentan
+ * como una petición de build release.
+ */
+val requestedTasks = gradle.startParameter.taskNames.map { it.substringAfterLast(':') }
+val wantsReleaseBuild = requestedTasks.any { name ->
+    val normalized = name.lowercase()
+    normalized == "build" || normalized == "assemble" || normalized.contains("release")
+}
+
+if (wantsReleaseBuild && !hasReleaseSigning()) {
+    throw GradleException(releaseSigningError)
+}
+
+// Red de seguridad: si la tarea de validación de firma existe (la crea AGP), el
+// chequeo se repite justo antes de firmar, por si acaso la configuración cambiara
+// entre la configuración del proyecto y la ejecución.
+tasks.matching { it.name == "validateSigningRelease" }.configureEach {
+    doFirst {
+        if (!hasReleaseSigning()) {
+            throw GradleException(releaseSigningError)
+        }
     }
 }
 
