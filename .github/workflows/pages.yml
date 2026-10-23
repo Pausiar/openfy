@@ -52,7 +52,9 @@ jobs:
           fi
           mkdir -p web/downloads
           gh release download "$RELEASE_TAG" --pattern 'openfy-latest.apk' --dir web/downloads --clobber
-          gh release download "$RELEASE_TAG" --pattern 'SHA256SUMS.txt' --dir web/downloads --clobber
+          # Releases antiguas (<= 0.2.2) no publican SHA256SUMS.txt: es opcional.
+          gh release download "$RELEASE_TAG" --pattern 'SHA256SUMS.txt' --dir web/downloads --clobber || \
+            echo "La release $RELEASE_TAG no incluye SHA256SUMS.txt (se genera solo el .sha256)."
           sha256sum web/downloads/openfy-latest.apk | awk '{print $1}' > web/downloads/openfy-latest.apk.sha256
           ls -la web/downloads
 
