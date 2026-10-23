@@ -1,103 +1,232 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" data-theme="dark">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Política de Privacidad — Openfy">
-  <title>Política de Privacidad — Openfy</title>
+  <meta name="description" content="Política de privacidad de Openfy conforme al RGPD y a la LOPDGDD: qué datos se tratan, con qué base jurídica, durante cuánto tiempo y cómo ejercer los derechos.">
+  <meta name="theme-color" content="#0b0a0f">
+  <link rel="canonical" href="https://pausiar.github.io/openfy/privacidad.html">
+  <meta name="robots" content="index, follow">
+  <title>Política de privacidad — Openfy</title>
   <link rel="icon" type="image/png" href="assets/logo.png">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,300;12..96,400;12..96,600;12..96,700;12..96,800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
-  <style>
-    .legal-container {
-      max-width: 800px;
-      margin: 80px auto;
-      padding: 40px 24px;
-      background: var(--bg-2);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-lg);
-      box-shadow: 0 20px 40px rgba(0,0,0,0.3);
-    }
-    .legal-container h1 {
-      font-size: 2.5rem;
-      margin-bottom: 24px;
-      letter-spacing: -0.03em;
-    }
-    .legal-container h2 {
-      font-size: 1.5rem;
-      margin-top: 32px;
-      margin-bottom: 16px;
-      letter-spacing: -0.02em;
-    }
-    .legal-container p {
-      color: var(--muted);
-      margin-bottom: 16px;
-      line-height: 1.7;
-    }
-    .legal-container ul {
-      margin-left: 20px;
-      margin-bottom: 16px;
-      color: var(--muted);
-    }
-    .legal-container li {
-      margin-bottom: 8px;
-    }
-    .back-home {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      color: var(--accent);
-      text-decoration: none;
-      font-weight: 600;
-      margin-bottom: 32px;
-      transition: opacity 0.2s;
-    }
-    .back-home:hover {
-      opacity: 0.8;
-    }
-  </style>
+  <script src="site-config.js"></script>
+  <script src="app.js" defer></script>
 </head>
 <body>
 
-  <div class="bg-grid"></div>
-  <div class="bg-glow bg-glow-1"></div>
-  <div class="bg-glow bg-glow-2"></div>
+  <div class="bg-grid" aria-hidden="true"></div>
+  <div class="bg-glow" aria-hidden="true"></div>
 
-  <main class="legal-container">
+  <nav class="nav" aria-label="Navegación">
+    <div class="container nav-inner">
+      <a class="nav-logo" href="index.html">
+        <img src="assets/logo.png" alt="Logotipo de Openfy" class="nav-icon" width="30" height="30">
+        <span>Openfy</span>
+      </a>
+      <div class="nav-links">
+        <button class="theme-toggle" id="theme-toggle" type="button" aria-label="Cambiar entre tema oscuro y claro" title="Cambiar tema">
+          <svg class="icon-moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+          <svg class="icon-sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+        </button>
+        <a href="index.html">Volver al inicio</a>
+      </div>
+    </div>
+  </nav>
+
+  <main class="doc">
     <a href="index.html" class="back-home">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
       Volver al inicio
     </a>
 
-    <h1>Política de Privacidad</h1>
-    <p>La privacidad de los usuarios es una prioridad absoluta para Openfy. Esta política de privacidad describe cómo se gestionan los datos tanto en este sitio web como en la aplicación móvil de Openfy, cumpliendo estrictamente con el Reglamento General de Protección de Datos (RGPD) de la Unión Europea y la Ley Orgánica de Protección de Datos y Garantía de los Derechos Digitales (LOPDGDD) de España.</p>
+    <header class="doc-header">
+      <h1>Política de privacidad</h1>
+      <p>
+        Esta política explica qué datos personales se tratan al visitar este sitio web y al usar la
+        aplicación Openfy, con qué base jurídica, durante cuánto tiempo se conservan y cómo puedes
+        ejercer tus derechos. Se elabora conforme al Reglamento (UE) 2016/679 (RGPD) y a la Ley
+        Orgánica 3/2018 (LOPDGDD).
+      </p>
+      <p class="doc-updated">Última actualización: 23 de octubre de 2026</p>
+    </header>
 
-    <h2>1. Recopilación de Datos Personales</h2>
-    <p><strong>En el sitio web:</strong> Este sitio web es una página estática alojada en GitHub Pages. No recopilamos, almacenamos ni procesamos ningún dato personal de los visitantes. No hay formularios de registro, boletines informativos ni herramientas de análisis de terceros que rastreen su comportamiento.</p>
-    <p><strong>En la aplicación móvil Openfy:</strong> La aplicación Openfy recopila <strong>cero datos personales</strong>. No requiere registro de usuario, no utiliza cuentas de inicio de sesión y no transmite ningún tipo de información de uso, telemetría o estadísticas a servidores externos.</p>
+    <div class="notice">
+      <p>
+        <strong>Antes de publicar:</strong> rellena el nombre, el NIF/CIF, el domicilio y el correo
+        de contacto del titular en <code>web/site-config.js</code>. Son datos que el RGPD exige
+        identificar y el artículo 10 de la LSSI obliga a publicar.
+      </p>
+    </div>
 
-    <h2>2. Almacenamiento de la Información</h2>
-    <p>Toda la información que usted gestiona dentro de la aplicación móvil Openfy (playlists importadas, canciones favoritas, historial de reproducción local y configuración de la app) se almacena de forma <strong>estrictamente local</strong> en su propio dispositivo utilizando bases de datos seguras (Room) y preferencias cifradas (DataStore).</p>
-    <p>Esta información nunca sale de su dispositivo, a menos que usted decida exportar manualmente su biblioteca en formato JSON para transferirla o guardarla como copia de seguridad.</p>
-
-    <h2>3. Servicios de Terceros</h2>
-    <p>Para ofrecer sus funciones de reproducción, la aplicación realiza conexiones directas a APIs públicas o extractores de contenido (como YouTube o Piped) únicamente para obtener las direcciones de transmisión de audio. Estas conexiones se realizan directamente desde su dispositivo a los servidores del servicio correspondiente, sin intermediarios.</p>
-    <p>Al interactuar con estos servicios externos, se aplican las políticas de privacidad de los respectivos proveedores (por ejemplo, la Política de Privacidad de Google/YouTube).</p>
-
-    <h2>4. Derechos del Usuario (Derechos ARCO-POL)</h2>
-    <p>Dado que no recopilamos ni almacenamos ningún dato personal suyo, no disponemos de ninguna información que usted pueda rectificar, suprimir o consultar. No obstante, el Reglamento General de Protección de Datos le otorga los siguientes derechos:</p>
+    <h2>1. Responsable del tratamiento</h2>
     <ul>
-      <li>Derecho de acceso, rectificación y supresión de sus datos.</li>
-      <li>Derecho a la limitación del tratamiento y a la portabilidad de sus datos.</li>
-      <li>Derecho de oposición a que se traten sus datos.</li>
+      <li><strong>Identificación:</strong> <span data-legal="name" data-placeholder="Pendiente de completar"></span></li>
+      <li><strong>NIF / CIF / NIE:</strong> <span data-legal="taxId" data-placeholder="Pendiente de completar"></span></li>
+      <li><strong>Domicilio:</strong> <span data-legal="address" data-placeholder="Pendiente de completar"></span></li>
+      <li><strong>Correo de contacto:</strong> <span data-legal="email" data-placeholder="Pendiente de completar"></span></li>
     </ul>
-    <p>Usted tiene el control total de sus datos dentro de la aplicación Openfy y puede eliminarlos por completo en cualquier momento borrando los datos de la aplicación desde los ajustes de su dispositivo Android o eliminando las playlists de forma manual dentro de la app.</p>
+    <p>
+      El titular de este sitio también es el autor y responsable del proyecto Openfy
+      (<a href="https://github.com/Pausiar/openfy" target="_blank" rel="noopener noreferrer">github.com/Pausiar/openfy</a>).
+    </p>
 
-    <h2>5. Cambios en esta Política</h2>
-    <p>Esta Política de Privacidad puede ser actualizada en el futuro para reflejar cambios en la aplicación o adaptaciones legales. Cualquier modificación será publicada en esta misma página con su correspondiente fecha de actualización.</p>
+    <h2>2. Resumen en una tabla</h2>
+    <table>
+      <thead>
+        <tr><th>Ámbito</th><th>Datos tratados</th><th>Base jurídica</th><th>Conservación</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Sitio web</td>
+          <td>Ninguno de forma deliberada (sin cookies, sin analítica, sin formularios)</td>
+          <td>No aplica: no hay tratamiento de datos personales por parte del titular</td>
+          <td>No aplica</td>
+        </tr>
+        <tr>
+          <td>Almacenamiento web</td>
+          <td>Preferencia de tema (claro/oscuro)</td>
+          <td>Consentimiento (art. 6.1.a RGPD), revocable</td>
+          <td>Hasta que se borre el almacenamiento del navegador</td>
+        </tr>
+        <tr>
+          <td>Aplicación Android</td>
+          <td>Biblioteca, favoritos, historial y ajustes, guardados en el dispositivo</td>
+          <td>Ejecución de la aplicación a petición del usuario (art. 6.1.b)</td>
+          <td>Hasta que el usuario los borre o desinstale la app</td>
+        </tr>
+        <tr>
+          <td>Repositorios de terceros contacted desde la app</td>
+          <td>Dirección IP y datos técnicos de la conexión</td>
+          <td>Interés legítimo del proveedor (art. 6.1.f)</td>
+          <td>Según la política de cada proveedor</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h2>3. Datos tratados en este sitio web</h2>
+    <p>
+      Este sitio es estático y lo sirve <span data-legal="hosting" data-placeholder="Pendiente de completar"></span>
+      a través de <span data-legal="hostingService" data-placeholder="Pendiente de completar"></span>.
+      No hay formularios de contacto, registro de usuarios, boletín, herramientas de analítica,
+      píxeles, publicidad ni recursos cargados desde servidores de terceros. En concreto:
+    </p>
+    <ul>
+      <li>No se instalan cookies de ningún tipo (ver la <a href="cookies.html">política de cookies</a>).</li>
+      <li>No se incrustan tipografías, mapas, vídeos ni scripts de Google, Meta u otros terceros.</li>
+      <li>No se mide el comportamiento de los visitantes.</li>
+    </ul>
+    <p>
+      El único dato que el navegador guarda en este sitio es tu preferencia de tema (claro u
+      oscuro), mediante <code>localStorage</code>. Es un dato técnico que no te identifica, se
+      almacena únicamente en tu equipo y puedes eliminarlo borrando los datos del sitio en tu
+      navegador.
+    </p>
+    <p>
+      El alojamiento web implica que el proveedor de infraestructura puede tratar datos
+      técnicos (por ejemplo, direcciones IP) de forma autónoma para dar servicio y prevenir
+      abusos, conforme a sus propias condiciones y política de privacidad. Ese tratamiento no se
+      realiza bajo la responsabilidad del titular de este sitio.
+    </p>
+
+    <h2>4. Datos tratados en la aplicación Android</h2>
+    <p>
+      La aplicación Openfy <strong>no recopila ningún dato personal</strong> y no dispone de
+      registro, inicio de sesión, telemetría, analítica ni publicidad. No envía información de uso
+      a ningún servidor del titular.
+    </p>
+    <p>
+      Toda la información que gestionas (playlists importadas, canciones favoritas, historial de
+      reproducción y preferencias) se almacena <strong>exclusivamente en tu dispositivo</strong>,
+      mediante una base de datos local (Room) y el almacén de preferencias (DataStore). Esa
+      información no sale del dispositivo salvo que decas exportarla tú mismo en un archivo JSON.
+    </p>
+    <p>
+      Para resolver la reproducción, la app se conecta directamente desde tu dispositivo a
+      servicios de terceros (YouTube, Spotify y instancias públicas de Piped). En esas
+      conexiones esos proveedores reciben tu dirección IP y datos técnicos de la navegación, que
+      tratan conforme a sus propias políticas de privacidad. Openfy no actúa como intermediario
+      ni como responsable de ese tratamiento.
+    </p>
+    <p>
+      La clave de la API de YouTube, si el titular la configura, viaja dentro de la aplicación
+      y no se expone en este sitio web ni en ningún repositorio público. La app funciona sin ella.
+    </p>
+
+    <h2>5. Destinatarios y transferencias internacionales</h2>
+    <p>
+      No hay cesiones de datos a terceros por parte del titular. Los datos que llegan a terceros
+      lo hacen directamente desde tu dispositivo y con las garantías de cada proveedor:
+    </p>
+    <ul>
+      <li><strong>Google LLC / YouTube:</strong> aplicación de las Condiciones de Servicio y la Política de Privacidad de YouTube, con transferencias internacionales a Estados Unidos bajo el marco de privacidad de la UE.</li>
+      <li><strong>Spotify AB:</strong> únicamente cuando el usuario abre la aplicación oficial de Spotify desde Openfy.</li>
+      <li><strong>Instancias públicas de Piped:</strong> servidores comunitarios de código abierto, sin relación con el titular de Openfy.</li>
+    </ul>
+
+    <h2>6. Conservación de los datos</h2>
+    <p>
+      Los datos de la aplicación se conservan hasta que el usuario los elimina: borrando las
+      playlists dentro de la app, usando la función «Borrar datos locales» de Ajustes, o
+      desinstalando la aplicación. La copia JSON que exporta el usuario queda bajo su control
+      exclusivo.
+    </p>
+
+    <h2>7. Tus derechos</h2>
+    <p>
+      Puedes ejercer los siguientes derechos escribiendo al correo de contacto indicado en el
+      apartado 1:
+    </p>
+    <ul>
+      <li><strong>Acceso:</strong> conocer qué datos tu tratamos.</li>
+      <li><strong>Rectificación:</strong> corregir datos inexactos.</li>
+      <li><strong>Supresión:</strong> solicitar la eliminación de tus datos.</li>
+      <li><strong>Limitación:</strong> pedir que se limite el tratamiento.</li>
+      <li><strong>Oposición:</strong> oponerte a un tratamiento basado en interés legítimo.</li>
+      <li><strong>Portabilidad:</strong> recibir tus datos en formato estructurado (la app permite exportar la biblioteca en JSON).</li>
+      <li><strong>Retirada del consentimiento:</strong> en cualquier momento, sin efectos retroactivos.</li>
+    </ul>
+    <p>
+      En la práctica, la forma más sencilla de ejercerlos es dentro de la propia app: borrar los
+      datos locales o desinstalar la aplicación. Si necesitas un certificado o un detalle sobre
+      el tratamiento de datos por parte del titular, puedes solicitarlo por correo electrónico.
+    </p>
+
+    <h2>8. Reclamación ante la autoridad de control</h2>
+    <p>
+      Si consideras que tus derechos no han sido correctamente atendidos, puedes presentar una
+      reclamación ante la <a href="https://www.aepd.es/" target="_blank" rel="noopener noreferrer">Agencia
+      Española de Protección de Datos</a> (sede electrónica: <code>https://sede.agpd.es</code>).
+      La Plataforma Europea de Resolución de litigios en línea (ODR) está desactivada desde el
+      20 de julio de 2025.
+    </p>
+
+    <h2>9. Menores de edad</h2>
+    <p>
+      Openfy no se dirige a menores de 14 años ni recoge datos de menores de esa edad, y no se
+      solicitan datos personales a menores de esa edad.
+    </p>
+
+    <h2>10. Cambios en esta política</h2>
+    <p>
+      Esta política puede actualizarse para reflejar cambios en la aplicación o en la normativa.
+      Cada cambio se publicará en esta misma página con su fecha de actualización. La versión
+      vigente es siempre la que aparece en esta página.
+    </p>
   </main>
+
+  <footer class="footer">
+    <div class="container footer-inner">
+      <nav class="footer-legal" aria-label="Información legal">
+        <a href="legal.html">Aviso legal</a>
+        <a href="privacidad.html">Política de privacidad</a>
+        <a href="cookies.html">Política de cookies</a>
+        <a href="terminos.html">Condiciones de uso</a>
+        <a href="licencias.html">Licencias de terceros</a>
+      </nav>
+      <p class="footer-updated">Openfy · <a href="https://github.com/Pausiar/openfy" target="_blank" rel="noopener noreferrer">github.com/Pausiar/openfy</a></p>
+    </div>
+  </footer>
 
 </body>
 </html>

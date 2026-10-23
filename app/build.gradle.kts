@@ -16,12 +16,35 @@ fun localProperty(name: String): String {
     return properties.getProperty(name) ?: System.getenv(name) ?: ""
 }
 
-fun hasReleaseSigning(): Boolean = listOf(
+/**
+ * Reads a value from the shared `version.properties` file, the single source of truth
+ * for the app version (also consumed by CI and by the web download manifest).
+ */
+fun versionProperty(name: String): String {
+    val properties = Properties()
+    val versionFile = rootProject.file("version.properties")
+    if (!versionFile.exists()) {
+        throw GradleException("Falta version.properties en la raíz del proyecto.")
+    }
+    versionFile.inputStream().use(properties::load)
+    return properties.getProperty(name)?.trim().orEmpty()
+}
+
+val appVersionName = versionProperty("versionName").ifBlank {
+    throw GradleException("version.properties no define versionName.")
+}
+val appVersionCode = versionProperty("versionCode").toIntOrNull() ?: run {
+    throw GradleException("version.properties no define un versionCode numérico válido.")
+}
+
+val releaseSigningKeys = listOf(
     "OPENFY_KEYSTORE_PATH",
     "OPENFY_KEYSTORE_PASSWORD",
     "OPENFY_KEY_ALIAS",
     "OPENFY_KEY_PASSWORD"
-).all { localProperty(it).isNotBlank() }
+)
+
+fun hasReleaseSigning(): Boolean = releaseSigningKeys.all { localProperty(it).isNotBlank() }
 
 android {
     namespace = "com.pausiar.openfy"
@@ -31,8 +54,8 @@ android {
         applicationId = "com.pausiar.openfy.player"
         minSdk = 28
         targetSdk = 35
-        versionCode = 9
-        versionName = "0.2.2"
+        versionCode = appVersionCode
+        versionName = appVersionName
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -45,24 +68,30 @@ android {
 
     signingConfigs {
         create("release") {
-            if (hasReleaseSigning()) {
-                storeFile = file(localProperty("OPENFY_KEYSTORE_PATH"))
+            val keystorePath = localProperty("OPENFY_KEYSTORE_PATH")
+            if (keystorePath.isNotBlank()) {
+                storeFile = file(keystorePath)
                 storePassword = localProperty("OPENFY_KEYSTORE_PASSWORD")
                 keyAlias = localProperty("OPENFY_KEY_ALIAS")
                 keyPassword = localProperty("OPENFY_KEY_PASSWORD")
             }
+            // Firma con los esquemas que Android 9+ (minSdk 28) soporta:
+            //   v2 -> verificación completa del APK
+            //   v3 -> añade soporte de rotación de claves y metadatos de firma
+            // v1 (JAR signing) no aporta nada con minSdk 28 y penaliza el tamaño.
+            enableV1Signing = false
+            enableV2Signing = true
+            enableV3Signing = true
         }
     }
 
     buildTypes {
         release {
             isMinifyEnabled = false
-            // Sin claves de release se firma con la clave debug para que la APK sea instalable.
-            signingConfig = if (hasReleaseSigning()) {
-                signingConfigs.getByName("release")
-            } else {
-                signingConfigs.getByName("debug")
-            }
+            // La APK release SIEMPRE usa la clave de release. Nunca la clave debug:
+            // una APK firmada con la clave debug no puede actualizarse en el dispositivo
+            // y Android la marca como app de origen desconocido.
+            signingConfig = signingConfigs.getByName("release")
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
@@ -92,6 +121,39 @@ android {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
+    }
+}
+
+/**
+ * Falla la build de release si no hay credenciales de firma release.
+ *
+ * Se comprueba al construir el grafo de tareas (y no al configurar el proyecto) para
+ * que las builds de debug sigan funcionando sin secretos, y para que el error salte
+ * con un mensaje accionable en lugar del error genérico de AGP ("keystore not found").
+ */
+val releaseSigningError = """
+    |Falta la configuración de firma release de Openfy.
+    |
+    |Define en `local.properties` o como variables de entorno:
+    |  OPENFY_KEYSTORE_PATH
+    |  OPENFY_KEYSTORE_PASSWORD
+    |  OPENFY_KEY_ALIAS
+    |  OPENFY_KEY_PASSWORD
+    |
+    |Genera una clave de release con:
+    |  Windows: scripts\create-release-keystore.ps1
+    |  Linux/macOS: scripts/create-release-keystore.sh
+    |
+    |No se publica ninguna APK release firmada con la clave debug: no se podría
+    |actualizar en el dispositivo y Android mostraría avisos de aplicación no verificada.
+""".trimMargin()
+
+gradle.taskGraph.whenReady { graph ->
+    val buildsRelease = graph.allTasks.any { task ->
+        task.project == project && task.name.matches(Regex("^(assemble|package|sign|bundle)Release.*"))
+    }
+    if (buildsRelease && !hasReleaseSigning()) {
+        throw GradleException(releaseSigningError)
     }
 }
 

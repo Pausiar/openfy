@@ -10,15 +10,20 @@ import androidx.compose.material.icons.automirrored.rounded.OpenInNew
 import androidx.compose.material.icons.rounded.Block
 import androidx.compose.material.icons.rounded.CheckCircle
 import androidx.compose.material.icons.rounded.Lock
+import androidx.compose.material.icons.rounded.Verified
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
+import com.pausiar.openfy.BuildConfig
 import com.pausiar.openfy.presentation.components.InfoCard
 import com.pausiar.openfy.presentation.components.OpenfyLazyColumn
 import com.pausiar.openfy.presentation.components.OpenfyTopBar
 import com.pausiar.openfy.presentation.theme.OpenfySpacing
+import com.pausiar.openfy.utils.AppSignature
 
 private class LegalSection(
     val key: String,
@@ -60,6 +65,9 @@ private val LegalSections = listOf(
 
 @Composable
 fun LegalInfoScreen(onBack: () -> Unit) {
+    val context = LocalContext.current
+    val signature = remember(context) { AppSignature.sha256Fingerprints(context) }
+
     Column(modifier = Modifier.fillMaxSize()) {
         OpenfyTopBar(
             title = "Información legal",
@@ -87,6 +95,23 @@ fun LegalInfoScreen(onBack: () -> Unit) {
                     title = section.title,
                     body = section.body,
                     icon = section.icon,
+                )
+            }
+            item(key = "signature", contentType = "signature") {
+                InfoCard(
+                    title = "Firma de esta app",
+                    body = buildString {
+                        append("Versión ${BuildConfig.VERSION_NAME} (${BuildConfig.VERSION_CODE}).\n\n")
+                        if (signature.isEmpty()) {
+                            append("No se ha podido leer la firma del paquete.")
+                        } else {
+                            append("Huella SHA-256 del certificado de firma:\n")
+                            append(signature.joinToString("\n"))
+                            append("\n\nEsta huella debe coincidir con la publicada en la web oficial " +
+                                "(pausiar.github.io/openfy). Si no coincide, el APK no es el oficial.")
+                        }
+                    },
+                    icon = Icons.Rounded.Verified,
                 )
             }
         }

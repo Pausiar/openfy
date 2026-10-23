@@ -1,303 +1,634 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" data-theme="dark">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Openfy — App Android open source para importar playlists de YouTube y Spotify, organizar tu biblioteca y reproducir música.">
+  <title>Openfy — Reproductor de playlists open source para Android</title>
+  <meta name="description" content="Openfy es una app Android open source para importar playlists de YouTube y Spotify, organizar tu biblioteca local y reproducir música. Descarga la APK oficial firmada y verifica su firma.">
+  <meta name="theme-color" content="#0b0a0f">
+  <link rel="canonical" href="https://pausiar.github.io/openfy/">
+
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Openfy">
   <meta property="og:title" content="Openfy — Reproductor de playlists open source">
-  <meta property="og:description" content="Importa playlists de YouTube y Spotify, organiza tu biblioteca local y reproduce música en Android.">
-  <meta property="og:image" content="assets/logo.png">
-  <title>Openfy — Reproductor de playlists</title>
+  <meta property="og:description" content="Importa playlists de YouTube y Spotify, organiza tu biblioteca local y reproduce música en Android. 100% open source, sin cuentas y sin rastreo.">
+  <meta property="og:url" content="https://pausiar.github.io/openfy/">
+  <meta property="og:image" content="https://pausiar.github.io/openfy/assets/logo.png">
+  <meta property="og:locale" content="es_ES">
+
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Openfy — Reproductor de playlists open source">
+  <meta name="twitter:description" content="App Android open source para importar, organizar y reproducir tus playlists.">
+  <meta name="twitter:image" content="https://pausiar.github.io/openfy/assets/logo.png">
+
   <link rel="icon" type="image/png" href="assets/logo.png">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,300;12..96,400;12..96,600;12..96,700;12..96,800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="apple-touch-icon" href="assets/logo.png">
+  <link rel="manifest" href="site.webmanifest">
   <link rel="stylesheet" href="styles.css">
+  <script src="site-config.js"></script>
+  <script src="app.js" defer></script>
 </head>
 <body>
 
-  <!-- Background -->
-  <div class="bg-grid"></div>
-  <div class="bg-glow bg-glow-1"></div>
-  <div class="bg-glow bg-glow-2"></div>
+  <a class="skip-link" href="#contenido">Saltar al contenido principal</a>
 
-  <!-- Nav -->
-  <nav class="nav">
-    <div class="nav-inner">
-      <div class="nav-logo">
-        <img src="assets/logo.png" alt="Openfy" class="nav-icon">
-        <span class="nav-name">Openfy</span>
-      </div>
+  <div class="bg-grid" aria-hidden="true"></div>
+  <div class="bg-glow" aria-hidden="true"></div>
+
+  <!-- ============================ Navegación ============================ -->
+  <nav class="nav" aria-label="Navegación principal">
+    <div class="container nav-inner">
+      <a class="nav-logo" href="index.html">
+        <img src="assets/logo.png" alt="Logotipo de Openfy" class="nav-icon" width="30" height="30">
+        <span>Openfy</span>
+      </a>
       <div class="nav-links">
-        <a href="#features">Funciones</a>
-        <a href="#install">Instalar</a>
-        <a href="#tech">Stack</a>
-        <a href="https://github.com/Pausiar/openfy" target="_blank" rel="noopener" class="nav-gh">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
+        <a href="#funciones">Funciones</a>
+        <a href="#app">La app</a>
+        <a href="#descargar">Descargar</a>
+        <a href="#stack">Stack</a>
+        <button class="theme-toggle" id="theme-toggle" type="button" aria-label="Cambiar entre tema oscuro y claro" title="Cambiar tema">
+          <svg class="icon-moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+          <svg class="icon-sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+        </button>
+        <a href="https://github.com/Pausiar/openfy" target="_blank" rel="noopener noreferrer" class="nav-gh">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
           GitHub
         </a>
       </div>
     </div>
   </nav>
 
-  <!-- Hero -->
-  <header class="hero">
-    <div class="hero-inner">
-      <div class="hero-badge">
-        <span class="dot"></span>
-        Android · Gratis · Open Source
-      </div>
-      <div class="hero-logo-wrap">
-        <img src="assets/logo.png" alt="Openfy" class="hero-logo">
-      </div>
-      <h1 class="hero-title">Tu música.<br><span class="accent">Sin barreras.</span></h1>
-      <p class="hero-lead">
-        Importa playlists de YouTube o Spotify pegando un enlace, organiza tu biblioteca local y escucha con reproducción en segundo plano. <strong>100% open source. Sin cuentas. Sin rastreo.</strong>
-      </p>
-      <div class="hero-actions">
-        <a class="btn btn-primary" href="https://github.com/Pausiar/openfy/releases/latest/download/openfy-latest.apk">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-          Descargar APK
-        </a>
-        <a class="btn btn-secondary" href="https://github.com/Pausiar/openfy" target="_blank" rel="noopener noreferrer">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
-          Ver código
-        </a>
-      </div>
-      <p class="hero-hint">v0.1.5 · Requiere Android 9+ · Descarga desde GitHub Releases</p>
-    </div>
-    <div class="hero-visual">
-      <div class="player-mockup">
-        <div class="player-bar">
-          <div class="player-dot red"></div><div class="player-dot yellow"></div><div class="player-dot green"></div>
-        </div>
-        <div class="player-screen">
-          <div class="track-art"></div>
-          <div class="track-info">
-            <div class="track-title skeleton"></div>
-            <div class="track-artist skeleton short"></div>
-          </div>
-          <div class="controls">
-            <div class="ctrl-btn">⏮</div>
-            <div class="ctrl-btn play">▶</div>
-            <div class="ctrl-btn">⏭</div>
-          </div>
-          <div class="progress-bar"><div class="progress-fill"></div></div>
-          <div class="waveform">
-            <span></span><span></span><span></span><span></span><span></span>
-            <span></span><span></span><span></span><span></span><span></span>
-            <span></span><span></span><span></span><span></span><span></span>
-          </div>
-        </div>
-      </div>
-    </div>
-  </header>
+  <main id="contenido">
 
-  <main>
+    <!-- ============================== Hero ============================== -->
+    <header class="hero">
+      <div class="container hero-grid">
+        <div class="hero-text">
+          <span class="hero-badge"><span class="dot" aria-hidden="true"></span>Android 9+ · Gratis · Open source · Sin cuentas</span>
 
-    <!-- Stats strip -->
-    <section class="stats">
-      <div class="stats-inner">
-        <div class="stat">
-          <span class="stat-num">0</span>
-          <span class="stat-label">datos recogidos</span>
+          <img src="assets/logo.png" alt="Logotipo de Openfy" class="hero-logo" width="76" height="76">
+
+          <h1 class="hero-title">Tu música.<br><span class="accent">Sin barreras.</span></h1>
+
+          <p class="hero-lead">
+            Pega un enlace de YouTube o Spotify y Openfy lo convierte en una playlist
+            reproducible: biblioteca local, favoritos, cola y reproducción en segundo plano.
+            <strong>100% open source. Sin cuentas. Sin rastreo.</strong>
+          </p>
+
+          <div class="hero-actions">
+            <a class="btn btn-primary btn-lg" data-release="download" href="https://github.com/Pausiar/openfy/releases/latest/download/openfy-latest.apk" download>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              Descargar APK
+            </a>
+            <a class="btn btn-secondary" href="https://github.com/Pausiar/openfy" target="_blank" rel="noopener noreferrer">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
+              Ver código
+            </a>
+          </div>
+
+          <p class="hero-meta">
+            <span>Versión <strong data-release="version">0.2.2</strong></span>
+            <span class="dot-sep">Android 9 o superior</span>
+            <span class="dot-sep">MIT + componentes GPL (ver <a href="licencias.html">licencias</a>)</span>
+          </p>
         </div>
-        <div class="stat-divider"></div>
-        <div class="stat">
-          <span class="stat-num">100%</span>
-          <span class="stat-label">almacenamiento local</span>
+
+        <!-- M��vil con la pantalla de inicio real de la app -->
+        <div class="hero-visual">
+          <div class="phone" role="img" aria-label="Pantalla de inicio de la app Openfy: tarjeta de importación de playlist, accesos a biblioteca y música local, y lista de recientes">
+            <div class="phone-notch" aria-hidden="true"></div>
+            <div class="phone-screen">
+              <div class="phone-status" aria-hidden="true">
+                <span>9:41</span>
+                <span class="signals"><span style="height:6px"></span><span style="height:9px"></span><span style="height:12px"></span></span>
+              </div>
+              <div class="phone-body">
+                <div>
+                  <div class="app-greeting">Buenas tardes</div>
+                  <div class="app-title">Openfy</div>
+                  <div class="app-subtitle">Importa playlists, organiza tu biblioteca y escucha tu música local.</div>
+                </div>
+
+                <div class="app-card">
+                  <div class="app-row">
+                    <span class="app-bubble" aria-hidden="true">
+                      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+                    </span>
+                    <span>
+                      <span class="app-card-title">Importar playlist</span>
+                      <span class="app-card-sub" style="display:block">Funciona con enlaces de Spotify y YouTube</span>
+                    </span>
+                  </div>
+                  <div class="app-field">
+                    <span class="app-field-icon" aria-hidden="true">
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+                    </span>
+                    Pega un enlace de Spotify o YouTube
+                  </div>
+                  <div class="app-btn">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/></svg>
+                    Importar playlist
+                  </div>
+                </div>
+
+                <div class="app-shortcuts">
+                  <div class="app-shortcut">
+                    <span class="app-bubble" aria-hidden="true">
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+                    </span>
+                    <div class="app-card-title">Biblioteca</div>
+                    <div class="app-card-sub">Todas tus playlists</div>
+                  </div>
+                  <div class="app-shortcut">
+                    <span class="app-bubble" aria-hidden="true">
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2"/><path d="M12 18h.01"/></svg>
+                    </span>
+                    <div class="app-card-title">Música local</div>
+                    <div class="app-card-sub">Archivos del móvil</div>
+                  </div>
+                </div>
+
+                <div>
+                  <div class="app-section-title">Recientes</div>
+                  <div class="app-section-sub">Tus últimas playlists</div>
+                  <div class="app-tiles" style="margin-top:10px">
+                    <div>
+                      <div class="app-tile-art" style="--art-a:#ff4e45;--art-b:#d63f28"></div>
+                      <div class="app-tile-name">Rock clásico</div>
+                      <div class="app-tile-count">42 canciones</div>
+                    </div>
+                    <div>
+                      <div class="app-tile-art" style="--art-a:#1ed760;--art-b:#138a3e"></div>
+                      <div class="app-tile-name">Focus deep work</div>
+                      <div class="app-tile-count">28 canciones</div>
+                    </div>
+                    <div>
+                      <div class="app-tile-art" style="--art-a:#9b8cff;--art-b:#5b4bd6"></div>
+                      <div class="app-tile-name">Mis pistas</div>
+                      <div class="app-tile-count">16 canciones</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="app-mini">
+                <span class="app-mini-art" style="--art-a:#ff6a55;--art-b:#9b8cff"></span>
+                <span style="flex:1;min-width:0">
+                  <span class="app-card-title" style="display:block">Noche de fuegos</span>
+                  <span class="app-card-sub">Artista local</span>
+                </span>
+                <span class="app-mini-play" aria-hidden="true">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+                </span>
+              </div>
+
+              <div class="app-nav">
+                <span class="app-nav-item is-active"><span class="app-nav-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></span>Inicio</span>
+                <span class="app-nav-item"><span class="app-nav-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg></span>Biblioteca</span>
+                <span class="app-nav-item"><span class="app-nav-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="5" y="2" width="14" height="20" rx="2"/><path d="M12 18h.01"/></svg></span>Local</span>
+                <span class="app-nav-item"><span class="app-nav-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6h.09A1.65 1.65 0 0 0 10 3.09V3a2 2 0 1 1 4 0v.09A1.65 1.65 0 0 0 15 4.6a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9v.09a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></span>Ajustes</span>
+              </div>
+            </div>
+          </div>
         </div>
-        <div class="stat-divider"></div>
-        <div class="stat">
-          <span class="stat-num">MIT</span>
-          <span class="stat-label">licencia open source</span>
+      </div>
+    </header>
+
+    <!-- ============================== Datos ============================== -->
+    <section class="stats" aria-label="Openfy en cifras">
+      <div class="container stats-inner">
+        <div class="stat"><span class="stat-num">0</span><span class="stat-label">datos recogidos</span></div>
+        <div class="stat"><span class="stat-num">100%</span><span class="stat-label">almacenamiento local</span></div>
+        <div class="stat"><span class="stat-num">MIT</span><span class="stat-label">licencia del proyecto</span></div>
+        <div class="stat"><span class="stat-num">Android 9+</span><span class="stat-label">compatibilidad</span></div>
+      </div>
+    </section>
+
+    <!-- ============================ Funciones ============================ -->
+    <section class="section" id="funciones">
+      <div class="container">
+        <div class="section-head">
+          <span class="section-tag">Funciones</span>
+          <h2 class="section-title">Todo lo que necesitas.<br>Nada más.</h2>
+          <p class="section-desc">Openfy hace una cosa bien: dejarte escuchar tu música en Android sin nada más.</p>
         </div>
-        <div class="stat-divider"></div>
-        <div class="stat">
-          <span class="stat-num">Android 9+</span>
-          <span class="stat-label">compatible</span>
+
+        <div class="features-grid">
+          <article class="card">
+            <div class="card-icon" aria-hidden="true">
+              <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+            </div>
+            <h3>Importar por enlace</h3>
+            <p>Pega una URL de YouTube o Spotify y Openfy detecta el tipo automáticamente: playlist, vídeo, álbum o canción. Sin cuentas ni OAuth.</p>
+            <div class="card-code">↳ youtube.com/playlist?list=…</div>
+          </article>
+
+          <article class="card">
+            <div class="card-icon" aria-hidden="true">
+              <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+            </div>
+            <h3>Biblioteca local</h3>
+            <p>Busca, filtra por plataforma, ordena, renombra y elimina playlists. Todo se guarda con Room en tu dispositivo.</p>
+          </article>
+
+          <article class="card">
+            <div class="card-icon" aria-hidden="true">
+              <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg>
+            </div>
+            <h3>Reproductor integrado</h3>
+            <p>Cola, shuffle, repeat, mini-reproductor y reproducción en segundo plano con notificación multimedia (Media3 / ExoPlayer).</p>
+          </article>
+
+          <article class="card">
+            <div class="card-icon" aria-hidden="true">
+              <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            </div>
+            <h3>Audio local</h3>
+            <p>Importa archivos del dispositivo con el selector del sistema y mézclalos en playlists junto a tus referencias importadas.</p>
+          </article>
+
+          <article class="card">
+            <div class="card-icon" aria-hidden="true">
+              <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
+            </div>
+            <h3>Export / Import JSON</h3>
+            <p>Exporta tu biblioteca completa —playlists, favoritos, historial y preferencias— a un JSON e impórtala cuando quieras.</p>
+          </article>
+
+          <article class="card">
+            <div class="card-icon" aria-hidden="true">
+              <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg>
+            </div>
+            <h3>Firma oficial verificable</h3>
+            <p>Cada APK se firma con la clave de release del proyecto y publica su huella SHA-256. Puedes comprobar que la que instalas es la oficial.</p>
+          </article>
         </div>
       </div>
     </section>
 
-    <!-- Features -->
-    <section class="features" id="features">
-      <div class="section-header">
-        <div class="section-tag">Funciones</div>
-        <h2 class="section-title">Todo lo que necesitas.<br>Nada más.</h2>
-      </div>
-      <div class="features-grid">
-        <article class="card card-highlight">
-          <div class="card-icon">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
-          </div>
-          <h3>Importar por enlace</h3>
-          <p>Pega una URL de YouTube o Spotify y Openfy detecta el tipo automáticamente: playlist, vídeo, álbum o canción. Sin cuentas, sin OAuth.</p>
-          <div class="card-code">
-            <span class="mono muted">↳</span>
-            <span class="mono">youtube.com/playlist?list=…</span>
-          </div>
-        </article>
+    <!-- ============================== La app ============================== -->
+    <section class="section" id="app" style="background: color-mix(in srgb, var(--surface) 45%, transparent); border-block: 1px solid var(--hairline);">
+      <div class="container">
+        <div class="section-head">
+          <span class="section-tag">La app</span>
+          <h2 class="section-title">El mismo diseño<br>que la app.</h2>
+          <p class="section-desc">Esta web usa el mismo sistema de diseño que la app Android: paleta "Ember" oscura por defecto, radios suaves y jerarquía editorial.</p>
+        </div>
 
-        <article class="card">
-          <div class="card-icon">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        <div class="preview-grid">
+          <div class="preview-item">
+            <div class="phone" role="img" aria-label="Pantalla de inicio de Openfy">
+              <div class="phone-notch" aria-hidden="true"></div>
+              <div class="phone-screen">
+                <div class="phone-status" aria-hidden="true"><span>9:41</span><span class="signals"><span style="height:6px"></span><span style="height:9px"></span><span style="height:12px"></span></span></div>
+                <div class="phone-body">
+                  <div>
+                    <div class="app-greeting">Buenos días</div>
+                    <div class="app-title">Openfy</div>
+                    <div class="app-subtitle">Importa playlists, organiza tu biblioteca y escucha tu música local.</div>
+                  </div>
+                  <div class="app-card">
+                    <div class="app-row">
+                      <span class="app-bubble" aria-hidden="true"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></span>
+                      <span>
+                        <span class="app-card-title">Importar playlist</span>
+                        <span class="app-card-sub" style="display:block">Funciona con enlaces de Spotify y YouTube</span>
+                      </span>
+                    </div>
+                    <div class="app-field">Pega un enlace de Spotify o YouTube</div>
+                    <div class="app-btn">Importar playlist</div>
+                  </div>
+                  <div class="app-shortcuts">
+                    <div class="app-shortcut">
+                      <span class="app-bubble" aria-hidden="true"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg></span>
+                      <div class="app-card-title">Biblioteca</div>
+                      <div class="app-card-sub">Todas tus playlists</div>
+                    </div>
+                    <div class="app-shortcut">
+                      <span class="app-bubble" aria-hidden="true"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2"/><path d="M12 18h.01"/></svg></span>
+                      <div class="app-card-title">Música local</div>
+                      <div class="app-card-sub">Archivos del móvil</div>
+                    </div>
+                  </div>
+                </div>
+                <div class="app-nav">
+                  <span class="app-nav-item is-active"><span class="app-nav-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></span>Inicio</span>
+                  <span class="app-nav-item"><span class="app-nav-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg></span>Biblioteca</span>
+                  <span class="app-nav-item"><span class="app-nav-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="5" y="2" width="14" height="20" rx="2"/><path d="M12 18h.01"/></svg></span>Local</span>
+                  <span class="app-nav-item"><span class="app-nav-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6h.09A1.65 1.65 0 0 0 10 3.09V3a2 2 0 1 1 4 0v.09A1.65 1.65 0 0 0 15 4.6a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9v.09a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></span>Ajustes</span>
+                </div>
+              </div>
+            </div>
+            <h3>Inicio</h3>
+            <p>Importa en un toque y vuelve a lo último que escuchaste.</p>
           </div>
-          <h3>Biblioteca local</h3>
-          <p>Busca, filtra por plataforma, ordena, renombra y elimina playlists. Todo guardado con Room en tu dispositivo.</p>
-        </article>
 
-        <article class="card">
-          <div class="card-icon">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg>
+          <div class="preview-item">
+            <div class="phone" role="img" aria-label="Pantalla de biblioteca de Openfy con lista de playlists y filtros por plataforma">
+              <div class="phone-notch" aria-hidden="true"></div>
+              <div class="phone-screen">
+                <div class="phone-status" aria-hidden="true"><span>9:41</span><span class="signals"><span style="height:6px"></span><span style="height:9px"></span><span style="height:12px"></span></span></div>
+                <div class="phone-body">
+                  <div>
+                    <div class="app-title">Biblioteca</div>
+                    <div class="app-subtitle">12 playlists · 318 canciones</div>
+                  </div>
+                  <div class="app-field" style="margin-top:0">
+                    <span class="app-field-icon" aria-hidden="true"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg></span>
+                    Buscar en tu biblioteca
+                  </div>
+                  <div style="display:flex;gap:6px;flex-wrap:wrap">
+                    <span class="app-chip is-active">Todas</span>
+                    <span class="app-chip">YouTube</span>
+                    <span class="app-chip">Spotify</span>
+                    <span class="app-chip">Locales</span>
+                  </div>
+                  <div class="app-list">
+                    <div class="app-list-row">
+                      <span class="app-list-art" style="--art-a:#ff4e45;--art-b:#d63f28"></span>
+                      <span style="flex:1;min-width:0">
+                        <span class="app-card-title" style="display:block">Rock clásico</span>
+                        <span class="app-card-sub">42 canciones · YouTube</span>
+                      </span>
+                      <span class="app-badge is-youtube">YouTube</span>
+                    </div>
+                    <div class="app-list-row">
+                      <span class="app-list-art" style="--art-a:#1ed760;--art-b:#138a3e"></span>
+                      <span style="flex:1;min-width:0">
+                        <span class="app-card-title" style="display:block">Focus deep work</span>
+                        <span class="app-card-sub">28 canciones · Spotify</span>
+                      </span>
+                      <span class="app-badge is-spotify">Spotify</span>
+                    </div>
+                    <div class="app-list-row">
+                      <span class="app-list-art" style="--art-a:#9b8cff;--art-b:#5b4bd6"></span>
+                      <span style="flex:1;min-width:0">
+                        <span class="app-card-title" style="display:block">Mis pistas</span>
+                        <span class="app-card-sub">16 canciones · Local</span>
+                      </span>
+                      <span class="app-badge is-local">Local</span>
+                    </div>
+                    <div class="app-list-row">
+                      <span class="app-list-art" style="--art-a:#ffb86b;--art-b:#b86a12"></span>
+                      <span style="flex:1;min-width:0">
+                        <span class="app-card-title" style="display:block">Demo de Openfy</span>
+                        <span class="app-card-sub">1 canción · Demo</span>
+                      </span>
+                      <span class="app-badge is-demo">Demo</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="app-nav">
+                  <span class="app-nav-item"><span class="app-nav-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></span>Inicio</span>
+                  <span class="app-nav-item is-active"><span class="app-nav-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg></span>Biblioteca</span>
+                  <span class="app-nav-item"><span class="app-nav-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="5" y="2" width="14" height="20" rx="2"/><path d="M12 18h.01"/></svg></span>Local</span>
+                  <span class="app-nav-item"><span class="app-nav-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6h.09A1.65 1.65 0 0 0 10 3.09V3a2 2 0 1 1 4 0v.09A1.65 1.65 0 0 0 15 4.6a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9v.09a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></span>Ajustes</span>
+                </div>
+              </div>
+            </div>
+            <h3>Biblioteca</h3>
+            <p>Busca, filtra por plataforma y organiza sin salir del móvil.</p>
           </div>
-          <h3>Reproductor integrado</h3>
-          <p>Cola, shuffle, repeat, mini-player y reproducción en segundo plano con notificación multimedia. Servicio Media3/ExoPlayer.</p>
-        </article>
 
-        <article class="card">
-          <div class="card-icon">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+          <div class="preview-item">
+            <div class="phone" role="img" aria-label="Reproductor de Openfy con carátula, controles y cola de reproducción">
+              <div class="phone-notch" aria-hidden="true"></div>
+              <div class="phone-screen">
+                <div class="phone-status" aria-hidden="true"><span>9:41</span><span class="signals"><span style="height:6px"></span><span style="height:9px"></span><span style="height:12px"></span></span></div>
+                <div class="phone-body">
+                  <div class="app-player-top">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
+                    <span class="app-player-center">
+                      <span class="app-player-kicker">REPRODUCIENDO</span>
+                      <span class="app-player-name">Openfy</span>
+                    </span>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18M3 12h18M3 18h12"/></svg>
+                  </div>
+                  <div class="app-player-art" style="--art-a:#ff6a55;--art-b:#9b8cff"></div>
+                  <div>
+                    <div class="app-player-track">Noche de fuegos</div>
+                    <div class="app-player-artist">Artista local</div>
+                  </div>
+                  <div class="app-seek"><span></span></div>
+                  <div class="app-times"><span>1:24</span><span>3:38</span></div>
+                  <div class="app-controls">
+                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 3h5v5"/><path d="M4 20L21 3"/><path d="M21 16v5h-5"/><path d="M15 15l6 6"/><path d="M4 4l5 5"/></svg>
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M6 6h2v12H6zM9.5 12l8.5 6V6z"/></svg>
+                    <span class="app-ctrl-play"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg></span>
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M16 6h2v12h-2zM6 18l8.5-6L6 6z"/></svg>
+                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m17 2 4 4-4 4"/><path d="M3 11v-1a4 4 0 0 1 4-4h14"/><path d="m7 22-4-4 4-4"/><path d="M21 13v1a4 4 0 0 1-4 4H3"/></svg>
+                  </div>
+                  <div class="app-upnext">
+                    <span class="app-mini-art" style="--art-a:#ff4e45;--art-b:#d63f28"></span>
+                    <span style="flex:1;min-width:0">
+                      <span class="app-card-sub" style="display:block">A continuación</span>
+                      <span class="app-card-title">Rock clásico · 3 de 42</span>
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <h3>Reproductor</h3>
+            <p>Cola, aleatorio, repetición y control desde la notificación.</p>
           </div>
-          <h3>Audio local</h3>
-          <p>Importa archivos del dispositivo con el selector del sistema y mézclalos en playlists junto a tus referencias importadas.</p>
-        </article>
-
-        <article class="card">
-          <div class="card-icon">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
-          </div>
-          <h3>Export / Import JSON</h3>
-          <p>Exporta toda tu biblioteca — playlists, favoritos, historial y preferencias — a un JSON. Importa en cualquier momento para restaurar.</p>
-        </article>
-
-        <article class="card">
-          <div class="card-icon">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-          </div>
-          <h3>Sin claves en cliente</h3>
-          <p>La YouTube API key es opcional y nunca se embebe en la APK pública. El proxy de Spotify tampoco expone credenciales en el frontend.</p>
-        </article>
+        </div>
       </div>
     </section>
 
-    <!-- How it works -->
-    <section class="install" id="install">
-      <div class="section-header">
-        <div class="section-tag">Instalación</div>
-        <h2 class="section-title">En marcha en 60 segundos</h2>
-      </div>
-      <div class="steps-grid">
-        <div class="step">
-          <div class="step-num">01</div>
-          <div class="step-content">
-            <h3>Descarga el APK</h3>
-            <p>Pulsa el botón de descarga. El archivo <span class="mono">openfy-latest.apk</span> se descargará desde GitHub Releases.</p>
+    <!-- ============================ Descarga ============================ -->
+    <section class="section" id="descargar">
+      <div class="container">
+        <div class="download">
+          <div class="download-grid">
+            <div>
+              <div class="release-head">
+                <span class="release-version">v<span data-release="version">0.2.2</span></span>
+                <span class="release-pill" data-release="pill">Firmada y verificada</span>
+              </div>
+              <p class="release-desc">
+                Descarga la APK oficial. Se sirve desde GitHub Pages (CDN) con el espejo de
+                GitHub Releases como alternativa, y cada versión publica su SHA-256 y la
+                huella del certificado de firma para que puedas comprobar la integridad
+                del archivo.
+              </p>
+
+              <div class="download-actions">
+                <a class="btn btn-primary btn-lg" data-release="download" href="https://github.com/Pausiar/openfy/releases/latest/download/openfy-latest.apk" download>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                  Descargar APK
+                </a>
+                <a class="btn btn-secondary" data-release="mirror" href="https://github.com/Pausiar/openfy/releases/latest/download/openfy-latest.apk" target="_blank" rel="noopener noreferrer">
+                  Espejo en GitHub Releases
+                </a>
+                <a class="btn btn-ghost" href="https://github.com/Pausiar/openfy/releases" target="_blank" rel="noopener noreferrer">
+                  Historial de versiones →
+                </a>
+              </div>
+
+              <p class="download-status" id="download-status" role="status">
+                <span class="status-dot" aria-hidden="true"></span>
+                <span id="download-status-text">Comprobando disponibilidad de la descarga…</span>
+              </p>
+
+              <div class="steps">
+                <div class="step">
+                  <div class="step-num">01</div>
+                  <h3>Descarga el APK</h3>
+                  <p>Un único archivo <span class="mono">openfy-latest.apk</span>. Sin instaladores ni pasos extra.</p>
+                </div>
+                <div class="step">
+                  <div class="step-num">02</div>
+                  <h3>Permite fuentes desconocidas</h3>
+                  <p>Android pedirá permiso para instalar apps de fuentes externas. Actívalo solo para el navegador que uses.</p>
+                </div>
+                <div class="step">
+                  <div class="step-num">03</div>
+                  <h3>Instala e importa</h3>
+                  <p>Abre Openfy, pega un enlace de Spotify o YouTube y pulsa <strong>Importar playlist</strong>.</p>
+                </div>
+              </div>
+            </div>
+
+            <aside class="download-meta" aria-label="Detalles de la versión publicada">
+              <div class="meta-card">
+                <h4>Versión publicada</h4>
+                <div class="meta-value"><span class="grow" data-release="version">0.2.2</span></div>
+                <p class="meta-note" data-release="released">Publicada en GitHub Releases</p>
+              </div>
+
+              <div class="meta-card">
+                <h4>Tamaño del archivo</h4>
+                <div class="meta-value"><span class="grow" data-release="size">—</span></div>
+                <p class="meta-note">Requiere Android 9 (API 28) o superior.</p>
+              </div>
+
+              <div class="meta-card">
+                <h4>SHA-256 del APK</h4>
+                <div class="meta-value">
+                  <span class="grow" data-release="sha256">—</span>
+                  <button class="copy-btn" type="button" data-copy="sha256">Copiar</button>
+                </div>
+                <p class="meta-note">Comprueba que el archivo que has descargado no se ha modificado.</p>
+              </div>
+
+              <div class="meta-card">
+                <h4>Firma de la app (SHA-256)</h4>
+                <div class="meta-value">
+                  <span class="grow" data-release="fingerprint">—</span>
+                  <button class="copy-btn" type="button" data-copy="fingerprint">Copiar</button>
+                </div>
+                <p class="meta-note">Huella del certificado de release. La app muestra la misma en <em>Ajustes → Información legal</em>.</p>
+              </div>
+            </aside>
+          </div>
+
+          <div class="verify-box">
+            <h3>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg>
+              Verifica la descarga
+            </h3>
+            <p>
+              La APK se firma con la clave de release del proyecto (RSA 4096) y el CI comprueba
+              que el certificado coincide con el publicado aquí antes de subir nada.
+            </p>
+<pre><span class="comment"># 1. Comprueba el hash del archivo</span>
+sha256sum -c openfy-latest.apk.sha256
+
+<span class="comment"># 2. Comprueba quién firmó la APK</span>
+apksigner verify --print-certs openfy-latest.apk
+
+<span class="comment"># 3. Debe coincidir con la huella publicada en esta web</span>
+<span class="comment"># 78:B4:EC:CA:E9:6D:C9:74:28:87:7A:18:E7:E4:AD:1C:</span>
+<span class="comment"># E4:7B:85:C0:BD:C0:CB:67:56:0D:B7:07:3E:A2:7A:64</span></pre>
           </div>
         </div>
-        <div class="step-arrow">→</div>
-        <div class="step">
-          <div class="step-num">02</div>
-          <div class="step-content">
-            <h3>Permite fuentes desconocidas</h3>
-            <p>Android pedirá permiso para instalar apps de origen externo. Actívalo solo para esta descarga desde Ajustes.</p>
-          </div>
-        </div>
-        <div class="step-arrow">→</div>
-        <div class="step">
-          <div class="step-num">03</div>
-          <div class="step-content">
-            <h3>Importa tu primera playlist</h3>
-            <p>Copia una URL de YouTube o Spotify, pégala en Openfy y pulsa <strong>Importar</strong>. Listo.</p>
-          </div>
-        </div>
-      </div>
-      <div class="install-cta">
-        <a class="btn btn-primary btn-large" href="https://github.com/Pausiar/openfy/releases/latest/download/openfy-latest.apk">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-          Descargar última versión
-        </a>
-        <a class="btn btn-ghost" href="https://github.com/Pausiar/openfy/releases" target="_blank" rel="noopener">
-          Historial de versiones →
-        </a>
       </div>
     </section>
 
-    <!-- Tech stack -->
-    <section class="tech" id="tech">
-      <div class="section-header">
-        <div class="section-tag">Stack técnico</div>
-        <h2 class="section-title">Construido con<br>lo mejor de Android</h2>
-      </div>
-      <div class="tech-grid">
-        <div class="tech-card">
-          <span class="tech-label">Lenguaje</span>
-          <span class="tech-value mono">Kotlin</span>
+    <!-- ============================== Stack ============================== -->
+    <section class="section" id="stack" style="background: color-mix(in srgb, var(--surface) 45%, transparent); border-block: 1px solid var(--hairline);">
+      <div class="container">
+        <div class="section-head">
+          <span class="section-tag">Stack técnico</span>
+          <h2 class="section-title">Construido con<br>lo mejor de Android.</h2>
         </div>
-        <div class="tech-card">
-          <span class="tech-label">UI</span>
-          <span class="tech-value mono">Jetpack Compose + Material 3</span>
-        </div>
-        <div class="tech-card">
-          <span class="tech-label">Arquitectura</span>
-          <span class="tech-value mono">MVVM + Repository Pattern</span>
-        </div>
-        <div class="tech-card">
-          <span class="tech-label">Base de datos</span>
-          <span class="tech-value mono">Room Database</span>
-        </div>
-        <div class="tech-card">
-          <span class="tech-label">Preferencias</span>
-          <span class="tech-value mono">DataStore</span>
-        </div>
-        <div class="tech-card">
-          <span class="tech-label">Reproducción</span>
-          <span class="tech-value mono">Media3 / ExoPlayer</span>
-        </div>
-        <div class="tech-card">
-          <span class="tech-label">Red</span>
-          <span class="tech-value mono">Retrofit + KotlinX Serialization</span>
-        </div>
-        <div class="tech-card">
-          <span class="tech-label">Imágenes</span>
-          <span class="tech-value mono">Coil</span>
+        <div class="tech-grid">
+          <div class="tech-card"><span class="tech-label">Lenguaje</span><span class="tech-value">Kotlin</span></div>
+          <div class="tech-card"><span class="tech-label">UI</span><span class="tech-value">Compose + Material 3</span></div>
+          <div class="tech-card"><span class="tech-label">Arquitectura</span><span class="tech-value">MVVM + Repository</span></div>
+          <div class="tech-card"><span class="tech-label">Base de datos</span><span class="tech-value">Room</span></div>
+          <div class="tech-card"><span class="tech-label">Preferencias</span><span class="tech-value">DataStore</span></div>
+          <div class="tech-card"><span class="tech-label">Reproducción</span><span class="tech-value">Media3 / ExoPlayer</span></div>
+          <div class="tech-card"><span class="tech-label">Red</span><span class="tech-value">Retrofit + Serialization</span></div>
+          <div class="tech-card"><span class="tech-label">Imágenes</span><span class="tech-value">Coil</span></div>
         </div>
       </div>
     </section>
 
-    <!-- Legal -->
-    <section class="legal">
-      <div class="legal-inner">
-        <div class="legal-icon">
-          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--accent);"><path d="M16 16c0-3-2-5-4-5s-4 2-4 5"/><path d="M12 5v14"/><path d="M3 19h18"/><path d="M12 11h8"/><path d="M12 11H4"/><path d="M20 11v5c0 1.5-1.5 2.5-3 2.5s-3-1-3-2.5V11"/><path d="M4 11v5c0 1.5 1.5 2.5 3 2.5s3-1 3-2.5V11"/></svg>
+    <!-- ============================== Legal ============================== -->
+    <section class="section">
+      <div class="container">
+        <div class="legal-band">
+          <div class="legal-icon" aria-hidden="true" style="width:64px;height:64px;border-radius:20px;display:grid;place-items:center;background:color-mix(in srgb, var(--accent) 14%, transparent);color:var(--accent)">
+            <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18"/><path d="M5 7h14"/><path d="M3 11h18"/><path d="M7 15h10"/><path d="M5 21h14"/></svg>
+          </div>
+          <div>
+            <h2>Transparencia legal</h2>
+            <p>
+              Openfy <strong>no descarga audio protegido</strong>, no evita DRM, no bloquea anuncios de
+              terceros y no reproduce el contenido completo de Spotify o YouTube sin permisos válidos.
+            </p>
+            <p>
+              La app reproduce archivos locales del usuario, la demo incluida, previews oficiales cuando
+              un backend autorizado los suministra y streams permitidos. Para el resto, abre la app
+              oficial o el navegador. Ninguna clave de API se distribuye en la APK pública.
+            </p>
+            <div class="legal-list">
+              <a href="legal.html">Aviso legal</a>
+              <a href="privacidad.html">Privacidad</a>
+              <a href="cookies.html">Cookies</a>
+              <a href="terminos.html">Condiciones de uso</a>
+              <a href="licencias.html">Licencias</a>
+            </div>
+          </div>
         </div>
-        <h2>Transparencia legal</h2>
-        <p>Openfy <strong>no descarga audio protegido</strong>, no evita DRM, no bloquea anuncios de terceros y no reproduce contenido completo de Spotify o YouTube sin permisos válidos.</p>
-        <p>La app reproduce exclusivamente: archivos locales del usuario, la demo incluida, previews oficiales si un backend seguro las suministra, y streams autorizados. Para el resto, abre la app oficial o el navegador.</p>
-        <p>La YouTube API key es opcional y se configura en <span class="mono">local.properties</span> (fuera del repositorio público). No se distribuye ningún secreto en la APK pública.</p>
       </div>
     </section>
 
   </main>
 
+  <!-- ============================== Pie ============================== -->
   <footer class="footer">
-    <div class="footer-inner">
+    <div class="container footer-inner">
       <div class="footer-brand">
-        <img src="assets/logo.png" alt="Openfy" class="footer-logo">
+        <img src="assets/logo.png" alt="Logotipo de Openfy" class="footer-logo" width="30" height="30">
         <span>Openfy</span>
       </div>
-      <div class="footer-links">
-        <a href="https://github.com/Pausiar/openfy" target="_blank" rel="noopener">GitHub</a>
-        <a href="https://github.com/Pausiar/openfy/releases" target="_blank" rel="noopener">Releases</a>
-        <a href="https://github.com/Pausiar/openfy/issues" target="_blank" rel="noopener">Issues</a>
-        <a href="https://github.com/Pausiar" target="_blank" rel="noopener">@Pausiar</a>
-      </div>
-      <p class="footer-copy">Hecho con <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="display: inline-block; vertical-align: middle; margin: 0 2px; color: var(--accent);"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg> por <a href="https://github.com/Pausiar" target="_blank" rel="noopener">Pausiar</a> · MIT License</p>
-      <div class="footer-legal" style="margin-top: 16px; font-size: 0.85rem; display: flex; gap: 16px; justify-content: center; flex-wrap: wrap;">
-        <a href="legal.html" style="color: var(--muted); text-decoration: none; transition: color 0.2s;" onmouseover="this.style.color='var(--text)'" onmouseout="this.style.color='var(--muted)'">Aviso Legal</a>
-        <a href="privacidad.html" style="color: var(--muted); text-decoration: none; transition: color 0.2s;" onmouseover="this.style.color='var(--text)'" onmouseout="this.style.color='var(--muted)'">Política de Privacidad</a>
-        <a href="cookies.html" style="color: var(--muted); text-decoration: none; transition: color 0.2s;" onmouseover="this.style.color='var(--text)'" onmouseout="this.style.color='var(--muted)'">Política de Cookies</a>
-      </div>
+
+      <nav class="footer-links" aria-label="Enlaces del proyecto">
+        <a href="https://github.com/Pausiar/openfy" target="_blank" rel="noopener noreferrer">GitHub</a>
+        <a href="https://github.com/Pausiar/openfy/releases" target="_blank" rel="noopener noreferrer">Releases</a>
+        <a href="https://github.com/Pausiar/openfy/issues" target="_blank" rel="noopener noreferrer">Issues</a>
+        <a href="https://github.com/Pausiar" target="_blank" rel="noopener noreferrer">@Pausiar</a>
+      </nav>
+
+      <p class="footer-copy">Hecho con <span aria-hidden="true">♥</span> por <a href="https://github.com/Pausiar" target="_blank" rel="noopener noreferrer">Pausiar</a> · Código bajo licencia MIT</p>
+
+      <nav class="footer-legal" aria-label="Información legal">
+        <a href="legal.html">Aviso legal</a>
+        <a href="privacidad.html">Política de privacidad</a>
+        <a href="cookies.html">Política de cookies</a>
+        <a href="terminos.html">Condiciones de uso</a>
+        <a href="licencias.html">Licencias de terceros</a>
+        <a href="https://github.com/Pausiar/openfy/blob/main/LICENSE" target="_blank" rel="noopener noreferrer">LICENSE</a>
+      </nav>
+
+      <p class="footer-updated">
+        Versión de la web: <span data-release="version">0.2.2</span> ·
+        Última actualización: <span id="current-year">2026</span>
+      </p>
     </div>
   </footer>
 

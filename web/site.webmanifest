@@ -1,0 +1,19 @@
+{
+  "name": "Openfy",
+  "short_name": "Openfy",
+  "description": "Reproductor de playlists open source para Android.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#0b0a0f",
+  "theme_color": "#0b0a0f",
+  "lang": "es",
+  "icons": [
+    {
+      "src": "assets/logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}

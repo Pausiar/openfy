@@ -1,0 +1,31 @@
+{
+  "versionName": "0.2.2",
+  "versionCode": 10,
+  "releasedAt": "2026-10-14T11:25:22Z",
+  "apk": {
+    "file": "openfy-latest.apk",
+    "path": "downloads/openfy-latest.apk",
+    "url": "https://pausiar.github.io/openfy/downloads/openfy-latest.apk",
+    "sizeBytes": 61702339,
+    "sha256": "28dc3cb8196d3b8ed10bfe491506e8897d448a86a3ceeebfdc48510fdb12a934"
+  },
+  "signature": {
+    "subject": "CN=Openfy, O=Pausiar, C=ES",
+    "sha256": "78b4eccae96dc97428877a18e7e4ad1ce47b85c0bdc0cb67560db7073ea27a64",
+    "sha1": "6a417fd4c44350056316c17915d0666b4c365335"
+  },
+  "requirements": {
+    "minAndroid": "9",
+    "minSdk": 28
+  },
+  "mirrors": [
+    {
+      "label": "GitHub Releases",
+      "url": "https://github.com/Pausiar/openfy/releases/latest/download/openfy-latest.apk"
+    },
+    {
+      "label": "Release v0.2.2",
+      "url": "https://github.com/Pausiar/openfy/releases/tag/v0.2.2"
+    }
+  ]
+}

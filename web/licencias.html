@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Licencias de software de terceros incluidas en Openfy: NewPipeExtractor (GPL-3.0), AndroidX, Coil, Retrofit, OkHttp y Kotlin.">
+  <meta name="theme-color" content="#0b0a0f">
+  <link rel="canonical" href="https://pausiar.github.io/openfy/licencias.html">
+  <meta name="robots" content="index, follow">
+  <title>Licencias de terceros — Openfy</title>
+  <link rel="icon" type="image/png" href="assets/logo.png">
+  <link rel="stylesheet" href="styles.css">
+  <script src="site-config.js"></script>
+  <script src="app.js" defer></script>
+</head>
+<body>
+
+  <div class="bg-grid" aria-hidden="true"></div>
+  <div class="bg-glow" aria-hidden="true"></div>
+
+  <nav class="nav" aria-label="Navegación">
+    <div class="container nav-inner">
+      <a class="nav-logo" href="index.html">
+        <img src="assets/logo.png" alt="Logotipo de Openfy" class="nav-icon" width="30" height="30">
+        <span>Openfy</span>
+      </a>
+      <div class="nav-links">
+        <button class="theme-toggle" id="theme-toggle" type="button" aria-label="Cambiar entre tema oscuro y claro" title="Cambiar tema">
+          <svg class="icon-moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+          <svg class="icon-sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+        </button>
+        <a href="index.html">Volver al inicio</a>
+      </div>
+    </div>
+  </nav>
+
+  <main class="doc">
+    <a href="index.html" class="back-home">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+      Volver al inicio
+    </a>
+
+    <header class="doc-header">
+      <h1>Licencias de terceros</h1>
+      <p>
+        Openfy se apoya en bibliotecas de código abierto. Esta página enumera las dependencias
+        que se empaquetan en la APK y la licencia que cada una impone. El detalle completo, con los
+        textos de licencia, está en el fichero
+        <a href="https://github.com/Pausiar/openfy/blob/main/THIRD_PARTY_NOTICES.md" target="_blank" rel="noopener noreferrer">THIRD_PARTY_NOTICES.md</a>
+        del repositorio.
+      </p>
+      <p class="doc-updated">Última actualización: 23 de octubre de 2026</p>
+    </header>
+
+    <h2>1. Licencia del proyecto</h2>
+    <p>
+      El código propio de Openfy (aplicación Android y sitio web) se publica bajo la licencia
+      <strong>MIT</strong>. El texto completo está en el
+      <a href="https://github.com/Pausiar/openfy/blob/main/LICENSE" target="_blank" rel="noopener noreferrer">fichero LICENSE</a>.
+    </p>
+
+    <div class="notice">
+      <p>
+        <strong>Importante:</strong> la aplicación enlaza <strong>NewPipeExtractor</strong>, que se
+        distribuye bajo la <strong>GPL-3.0</strong>. La GPL-3.0 es copyleft: al enlazarse dentro de
+        la app, la APK distribuida debe ofrecerse bajo los mismos términos GPL-3.0, con su código
+        fuente completo disponible para quien lo solicite. El repositorio público del proyecto ya
+        cumple esa obligación, por lo que cualquiera puede obtener el <em>Corresponding Source</em>.
+      </p>
+      <p>
+        En la práctica esto significa que la app y su APK se distribuyen bajo la GPL-3.0 aunque el
+        código propio se publique bajo MIT. Puedes consultarlo en el <a href="terminos.html">apartado
+        3 de las condiciones de uso</a>.
+      </p>
+    </div>
+
+    <h2>2. Dependencias de la aplicación Android</h2>
+    <table>
+      <thead>
+        <tr><th>Componente</th><th>Uso en Openfy</th><th>Licencia</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>NewPipeExtractor</td>
+          <td>Resolución de streams de audio de YouTube</td>
+          <td><strong>GPL-3.0</strong></td>
+        </tr>
+        <tr>
+          <td>AndroidX (core, lifecycle, activity, navigation, room, datastore, documentfile, media3, splashscreen)</td>
+          <td>Infraestructura de Android, navegación, base de datos y reproducción</td>
+          <td>Apache-2.0</td>
+        </tr>
+        <tr>
+          <td>Jetpack Compose / Material 3 / Material Icons</td>
+          <td>Interfaz de usuario e iconos</td>
+          <td>Apache-2.0</td>
+        </tr>
+        <tr>
+          <td>Kotlin y kotlinx (coroutines, serialization)</td>
+          <td>Lenguaje, concurrencia y serialización</td>
+          <td>Apache-2.0</td>
+        </tr>
+        <tr>
+          <td>Retrofit + converter de kotlinx-serialization</td>
+          <td>Cliente HTTP para las APIs de YouTube</td>
+          <td>Apache-2.0</td>
+        </tr>
+        <tr>
+          <td>OkHttp</td>
+          <td>Cliente HTTP bajo, con interceptores de registro</td>
+          <td>Apache-2.0</td>
+        </tr>
+        <tr>
+          <td>Coil</td>
+          <td>Carga de portadas de canciones</td>
+          <td>Apache-2.0</td>
+        </tr>
+        <tr>
+          <td>jsoup (transitivo de NewPipeExtractor)</td>
+          <td>Análisis de HTML</td>
+          <td>MIT</td>
+        </tr>
+        <tr>
+          <td>jsoup, Rhino y otros transitivos de NewPipeExtractor</td>
+          <td>Dependencias transitivas del extractor</td>
+          <td>MIT / Apache-2.0</td>
+        </tr>
+      </tbody>
+    </table>
+    <p>
+      Las listas completas y exactas de dependencias y licencias, con sus textos, están en
+      <code>THIRD_PARTY_NOTICES.md</code> y en el informe de licencias que genera Android Gradle
+      Plugin (<code>app/build/reports/licenses/</code>) en cada compilación.
+    </p>
+
+    <h2>3. Recursos de este sitio web</h2>
+    <p>
+      El sitio web <strong>no carga ningún recurso de terceros</strong>. No utiliza tipografías
+      externas, ni scripts de analítica, ni reproductores incrustados, ni píxeles de terceros. Las
+      tipografías son las del propio sistema y las imágenes son las del proyecto. Por eso este
+      sitio no instala cookies ni requiere banner de consentimiento.
+    </p>
+
+    <h2>4. Marcas de terceros</h2>
+    <p>
+      <strong>Spotify</strong> es una marca de Spotify AB. <strong>YouTube</strong> es una marca de
+      Google LLC. Ambas se mencionan en Openfy de forma meramente descriptiva, para indicar con
+      qué servicios se pueden importar enlaces. Openfy no está afiliado, asociado, autorizado ni
+      respaldado por Spotify AB, Google LLC ni por sus filiales.
+    </p>
+
+    <h2>5. Fuente del proyecto</h2>
+    <p>
+      Todo el código, incluidos los scripts de publicación, los flujos de trabajo de CI y esta
+      web, está disponible en
+      <a href="https://github.com/Pausiar/openfy" target="_blank" rel="noopener noreferrer">github.com/Pausiar/openfy</a>.
+    </p>
+  </main>
+
+  <footer class="footer">
+    <div class="container footer-inner">
+      <nav class="footer-legal" aria-label="Información legal">
+        <a href="legal.html">Aviso legal</a>
+        <a href="privacidad.html">Política de privacidad</a>
+        <a href="cookies.html">Política de cookies</a>
+        <a href="terminos.html">Condiciones de uso</a>
+        <a href="licencias.html">Licencias de terceros</a>
+      </nav>
+      <p class="footer-updated">Openfy · <a href="https://github.com/Pausiar/openfy" target="_blank" rel="noopener noreferrer">github.com/Pausiar/openfy</a></p>
+    </div>
+  </footer>
+
+</body>
+</html>
