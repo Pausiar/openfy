@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Openfy — Reproductor de playlists open source para Android</title>
-  <meta name="description" content="Openfy es una app Android open source para importar playlists de YouTube y Spotify, organizar tu biblioteca local y reproducir música. Descarga la APK oficial firmada y verifica su firma.">
+  <meta name="description" content="Openfy es una app Android open source para importar playlists de YouTube y Spotify, organizar tu biblioteca local y reproducir música. Descarga la APK oficial para Android.">
   <meta name="theme-color" content="#0b0a0f">
   <link rel="canonical" href="https://pausiar.github.io/openfy/">
 
@@ -259,10 +259,10 @@
 
           <article class="card">
             <div class="card-icon" aria-hidden="true">
-              <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg>
+              <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
             </div>
-            <h3>Firma oficial verificable</h3>
-            <p>Cada APK se firma con la clave de release del proyecto y publica su huella SHA-256. Puedes comprobar que la que instalas es la oficial.</p>
+            <h3>Favoritos e historial</h3>
+            <p>Marca canciones como favoritas y retoma lo último que escuchaste desde el historial local.</p>
           </article>
         </div>
       </div>
@@ -445,13 +445,12 @@
             <div>
               <div class="release-head">
                 <span class="release-version">v<span data-release="version">0.2.2</span></span>
-                <span class="release-pill" data-release="pill">Firmada y verificada</span>
+                <span class="release-pill" data-release="pill">Disponible</span>
               </div>
               <p class="release-desc">
                 Descarga la APK oficial. Se sirve desde GitHub Pages (CDN) con el espejo de
-                GitHub Releases como alternativa, y cada versión publica su SHA-256 y la
-                huella del certificado de firma para que puedas comprobar la integridad
-                del archivo.
+                GitHub Releases como alternativa, y cada versión publica su SHA-256 para que
+                puedas comprobar la integridad del archivo.
               </p>
 
               <div class="download-actions">
@@ -512,15 +511,6 @@
                 </div>
                 <p class="meta-note">Comprueba que el archivo que has descargado no se ha modificado.</p>
               </div>
-
-              <div class="meta-card">
-                <h4>Firma de la app (SHA-256)</h4>
-                <div class="meta-value">
-                  <span class="grow" data-release="fingerprint">—</span>
-                  <button class="copy-btn" type="button" data-copy="fingerprint">Copiar</button>
-                </div>
-                <p class="meta-note">Huella del certificado de release. La app muestra la misma en <em>Ajustes → Información legal</em>.</p>
-              </div>
             </aside>
           </div>
 
@@ -530,18 +520,12 @@
               Verifica la descarga
             </h3>
             <p>
-              La APK se firma con la clave de release del proyecto (RSA 4096) y el CI comprueba
-              que el certificado coincide con el publicado aquí antes de subir nada.
+              Compara el SHA-256 del archivo con el publicado en esta página antes de instalar nada.
             </p>
-<pre><span class="comment"># 1. Comprueba el hash del archivo</span>
-sha256sum -c openfy-latest.apk.sha256
+<pre><span class="comment"># Calcula el hash del archivo</span>
+sha256sum openfy-latest.apk
 
-<span class="comment"># 2. Comprueba quién firmó la APK</span>
-apksigner verify --print-certs openfy-latest.apk
-
-<span class="comment"># 3. Debe coincidir con la huella publicada en esta web</span>
-<span class="comment"># 78:B4:EC:CA:E9:6D:C9:74:28:87:7A:18:E7:E4:AD:1C:</span>
-<span class="comment"># E4:7B:85:C0:BD:C0:CB:67:56:0D:B7:07:3E:A2:7A:64</span></pre>
+<span class="comment"># Debe coincidir con el SHA-256 publicado en esta página</span></pre>
           </div>
         </div>
       </div>

@@ -65,6 +65,7 @@
   --space-2: 8px;
   --space-3: 12px;
   --space-4: 16px;
+  --space-5: 20px;
   --space-6: 24px;
   --space-8: 32px;
   --space-12: 48px;
@@ -524,7 +525,7 @@ code,
 .phone {
   position: relative;
   width: 100%;
-  max-width: 320px;
+  max-width: 380px;
   margin-inline: auto;
   padding: 10px;
   border-radius: 42px;
@@ -550,7 +551,7 @@ code,
   display: flex;
   flex-direction: column;
   min-height: 620px;
-  padding-bottom: 8px;
+  padding-bottom: 10px;
 }
 
 .phone-notch {
@@ -862,7 +863,7 @@ code,
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   align-items: center;
-  padding: 8px 6px 4px;
+  padding: 8px 6px 14px;
   border-top: 1px solid var(--hairline);
   background: color-mix(in srgb, var(--bg) 96%, transparent);
 }
@@ -1705,7 +1706,7 @@ code,
   }
 
   .phone {
-    max-width: 290px;
+    max-width: 330px;
   }
 
   .phone-screen {

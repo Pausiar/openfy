@@ -8,7 +8,7 @@
  *   1. Tema claro/oscuro (como el conmutador de la app) guardado en localStorage.
  *   2. Descarga fiable: lee el manifiesto de la release, comprueba que el CDN
  *      responde y, si no, cambia el botón al espejo de GitHub Releases.
- *   3. Botones de copiar para el SHA-256 y la huella de firma.
+ *   3. Botones de copiar para el SHA-256.
  */
 (function () {
   'use strict';
@@ -50,13 +50,6 @@
     var date = new Date(iso);
     if (isNaN(date.getTime())) return null;
     return date.toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' });
-  }
-
-  function groupFingerprint(hex) {
-    if (!hex) return null;
-    var clean = hex.replace(/[^0-9a-fA-F]/g, '').toUpperCase();
-    var groups = clean.match(/.{1,2}/g);
-    return groups ? groups.join(':') : clean;
   }
 
   /* ------------------------------------------------------------------ */
@@ -156,10 +149,6 @@
 
     if (manifest.apk && manifest.apk.sha256) {
       setText('sha256', manifest.apk.sha256);
-    }
-
-    if (manifest.signature && manifest.signature.sha256) {
-      setText('fingerprint', groupFingerprint(manifest.signature.sha256));
     }
 
     if (manifest.releasedAt) {
