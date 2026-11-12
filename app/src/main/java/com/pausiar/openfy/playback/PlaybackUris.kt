@@ -10,7 +10,7 @@ import com.pausiar.openfy.domain.models.Track
  * carga de ExoPlayer) mediante un ResolvingDataSource y [YouTubeStreamResolver].
  *
  *  - `openfy-yt://video/<videoId>`
- *  - `openfy-search://track/<trackId>?q=<consulta>&fallback=<url opcional>`
+ *  - `openfy-search://track/<trackId>?q=<consulta>&d=<duracion ms opcional>&fallback=<url opcional>`
  */
 object PlaybackUris {
     const val SCHEME_YOUTUBE = "openfy-yt"
@@ -19,13 +19,14 @@ object PlaybackUris {
     private const val YOUTUBE_AUTHORITY = "video"
     private const val SEARCH_AUTHORITY = "track"
     private const val PARAM_QUERY = "q"
+    private const val PARAM_DURATION = "d"
     private const val PARAM_FALLBACK = "fallback"
 
     private val PLACEHOLDER_TITLES = setOf("canción de spotify", "cancion de spotify")
 
     sealed interface Target {
         data class Video(val videoId: String) : Target
-        data class Search(val query: String, val fallbackUrl: String?) : Target
+        data class Search(val query: String, val fallbackUrl: String?, val durationMs: Long? = null) : Target
     }
 
     /** URI a usar en el MediaItem de [track], o null si no es reproducible dentro de Openfy. */
@@ -37,7 +38,12 @@ object PlaybackUris {
         // import la marque como no reproducible; si la busqueda falla se usa el preview oficial.
         if (track.platform == Platform.SPOTIFY) {
             searchQueryFor(track)?.let { query ->
-                return search(key = track.id.toString(), query = query, fallbackUrl = preview)
+                return search(
+                    key = track.id.toString(),
+                    query = query,
+                    fallbackUrl = preview,
+                    durationMs = track.durationMs,
+                )
             }
         }
 
@@ -50,13 +56,16 @@ object PlaybackUris {
 
     fun youtube(videoId: String): String = "$SCHEME_YOUTUBE://$YOUTUBE_AUTHORITY/$videoId"
 
-    fun search(key: String, query: String, fallbackUrl: String?): String =
+    fun search(key: String, query: String, fallbackUrl: String?, durationMs: Long? = null): String =
         Uri.Builder()
             .scheme(SCHEME_SEARCH)
             .authority(SEARCH_AUTHORITY)
             .appendPath(key)
             .appendQueryParameter(PARAM_QUERY, query)
             .apply {
+                if (durationMs != null && durationMs > 0) {
+                    appendQueryParameter(PARAM_DURATION, durationMs.toString())
+                }
                 if (!fallbackUrl.isNullOrBlank()) appendQueryParameter(PARAM_FALLBACK, fallbackUrl)
             }
             .build()
@@ -81,6 +90,7 @@ object PlaybackUris {
                     Target.Search(
                         query = query,
                         fallbackUrl = uri.getQueryParameter(PARAM_FALLBACK)?.takeIf { it.isNotBlank() },
+                        durationMs = uri.getQueryParameter(PARAM_DURATION)?.toLongOrNull()?.takeIf { it > 0 },
                     )
                 }
             }
