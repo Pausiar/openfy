@@ -64,7 +64,6 @@ class YouTubeStreamResolver(
 ) {
     private val streamCache = ConcurrentHashMap<String, ResolvedStream>()
     private val searchCache = ConcurrentHashMap<String, String>()
-    private val searchFailureUntil = ConcurrentHashMap<String, Long>()
     private val inFlight = ConcurrentHashMap<String, CompletableFuture<ResolvedStream>>()
     private val executor: ExecutorService = Executors.newCachedThreadPool(ResolverThreadFactory())
 
@@ -172,44 +171,42 @@ class YouTubeStreamResolver(
 
     private fun resolveSearchUncached(target: PlaybackUris.Target.Search): ResolvedStream {
         val key = searchKey(target.query)
-        val now = System.currentTimeMillis()
-        // Si fallo hace poco y hay preview, se usa directamente sin repetir la busqueda.
-        val recentlyFailed = (searchFailureUntil[key] ?: 0L) > now && target.fallbackUrl != null
-
-        val videoId = if (recentlyFailed) {
-            null
-        } else {
-            searchCache[key]
-                ?: runCatching { searchVideoId(target.query) }.getOrNull()?.also { searchCache[key] = it }
+        // Primero el video ya conocido (si caduco o fallo, se busca de nuevo); luego los candidatos.
+        val candidates = sequence {
+            searchCache[key]?.let { yield(it) }
+            yieldAll(runCatching { searchVideoIds(target.query, target.durationMs) }.getOrDefault(emptyList()))
         }
-
-        if (videoId != null) {
-            val resolved = runCatching { await(videoFuture(videoId)) }.getOrNull()
-            if (resolved != null) return resolved
+        for (videoId in candidates.distinct()) {
+            val resolved = runCatching { await(videoFuture(videoId)) }.getOrNull() ?: continue
+            searchCache[key] = videoId
+            return resolved
         }
-
-        searchFailureUntil[key] = now + SEARCH_FAILURE_TTL_MS
-        val fallback = target.fallbackUrl
-            ?: throw StreamResolutionException("No se ha encontrado \"${target.query}\" en YouTube")
-        return ResolvedStream(
-            url = fallback,
-            expiresAtMs = now + SEARCH_FAILURE_TTL_MS,
-            headers = YouTubeHttp.playbackHeadersFor(fallback),
-        )
+        // Sin version completa: falla y el servicio salta la pista. Nunca se suena un preview de 30 s.
+        searchCache.remove(key)
+        throw StreamResolutionException("No se ha encontrado \"${target.query}\" en YouTube")
     }
 
-    private fun searchVideoId(query: String): String? {
+    private fun searchVideoIds(query: String, expectedDurationMs: Long?): List<String> {
         val extractor = ServiceList.YouTube.getSearchExtractor(query)
         extractor.fetchPage()
-        return extractor.initialPage.items
+        val candidates = extractor.initialPage.items
             .asSequence()
             .filterIsInstance<StreamInfoItem>()
             .filter { item ->
                 val type = item.streamType
                 type != StreamType.LIVE_STREAM && type != StreamType.AUDIO_LIVE_STREAM
             }
-            .mapNotNull { item -> YouTubeHttp.extractVideoId(item.url) }
-            .firstOrNull()
+            .mapNotNull { item ->
+                YouTubeHttp.extractVideoId(item.url)?.let { id ->
+                    YouTubeMatchPicker.Candidate(
+                        videoId = id,
+                        durationSec = item.duration,
+                        isShort = item.isShortFormContent || item.url.contains("/shorts/"),
+                    )
+                }
+            }
+            .toList()
+        return YouTubeMatchPicker.pick(candidates, expectedDurationMs)
     }
 
     private fun searchKey(query: String): String = query.trim().lowercase()
@@ -440,6 +437,5 @@ class YouTubeStreamResolver(
         const val HEDGE_DELAY_MS = 2_500L
         const val RACE_TIMEOUT_MS = 15_000L
         const val AWAIT_TIMEOUT_MS = 45_000L
-        const val SEARCH_FAILURE_TTL_MS = 10L * 60L * 1000L
     }
 }
